@@ -81,7 +81,8 @@ function setup() { /// drawing setup, name borrowed from p5.js
     canvasX = cx;
     canvasY = cy;
 
-    squareSide = Math.max(Math.min(width / dim, height / dim), 45) * zoomLevel;
+    // Make squares a bit larger for better tank visibility
+    squareSide = Math.max(Math.min(width / dim, height / dim), 60) * zoomLevel;
     gridSide = squareSide * dim;
 
     if (loggedInUname && currState.players[loggedInUname].hp > 0) {
@@ -108,65 +109,151 @@ function setup() { /// drawing setup, name borrowed from p5.js
     document.querySelector("button#modalUpgradeButton").addEventListener("click", upgradeModalSubmitted);
 }
 
-function drawPlayer(p) {
-    let x = originX + p.pos.c * squareSide, y = originY + p.pos.r * squareSide;
-
-    ctx.fillStyle = (p.name == loggedInUname ? COLOURS.loggedInPlayerBorder : COLOURS.normalPlayerBorder);
-    if (gameState == "post-game" && currState.winner == p.name) {
-        ctx.fillStyle = COLOURS.winnerBorder;
+function drawPlayer(p, isSelected = false) {
+    // Get player position (actual position or animated position)
+    let playerAnimation = animatedPlayers.get(p.name);
+    let x, y;
+    
+    if (playerAnimation) {
+        // Use animated position
+        x = playerAnimation.currentX;
+        y = playerAnimation.currentY;
+    } else {
+        // Use regular position from grid
+        x = originX + p.pos.c * squareSide;
+        y = originY + p.pos.r * squareSide;
     }
-    ctx.fillRect(x, y, squareSide, squareSide);
-
-    const BORDER_WIDTH = 3, MARGIN = 5;
-
-    const left = x + BORDER_WIDTH;
-    const top = y + BORDER_WIDTH;
-    const right = x + squareSide - BORDER_WIDTH;
-    const bottom = y + squareSide - BORDER_WIDTH;
-    const middle = x + squareSide / 2;
-    const innerWidth = squareSide - 2 * BORDER_WIDTH;
-
-    ctx.fillStyle = (p.name == loggedInUname ? COLOURS.loggedInPlayerBackground : COLOURS.normalPlayerBackground);
-    if (gameState == "post-game" && currState.winner == p.name) {
-        ctx.fillStyle = COLOURS.winnerBackground;
+    
+    // Determine which tank to draw based on player
+    let tankIndex;
+    let isCurrentPlayer = p.name === loggedInUname;
+    
+    if (gameState === "post-game" && currState.winner === p.name) {
+        // Winner gets a gold tank
+        tankIndex = "sand";
+    } else if (isCurrentPlayer) {
+        // Current player gets a green tank
+        tankIndex = "green";
+    } else {
+        // Other players get different colored tanks based on name hash
+        const hash = p.name.split("").reduce((a, b) => {
+            a = ((a << 5) - a) + b.charCodeAt(0);
+            return a & a;
+        }, 0);
+        
+        const options = ["blue", "red", "dark"];
+        tankIndex = options[Math.abs(hash) % options.length];
     }
-    ctx.fillRect(left, top, innerWidth, innerWidth);
+    
+    const tankBody = IMAGES.tanks[tankIndex];
+    const tankBarrel = IMAGES.barrels[tankIndex];
+    
+    // Calculate tank dimensions (make it slightly smaller than the cell)
+    const SCALE = 0.85; // Scale factor for the tank
+    const tankWidth = squareSide * SCALE;
+    const tankHeight = tankWidth * (tankBody.height / tankBody.width);
+    
+    // Center of tank/cell for rotation
+    const centerX = x + squareSide / 2;
+    const centerY = y + squareSide / 2;
+    
+    // Regular non-rotated drawing
+    // Center the tank in the cell
+    const tankX = x + (squareSide - tankWidth) / 2;
+    const tankY = y + (squareSide - tankHeight) / 2;
+        
+    const tankOutline = IMAGES.tanksOutline[tankIndex];
+        
+    // Draw tank body
+    ctx.drawImage(tankBody, tankX, tankY, tankWidth, tankHeight);
+        
+    // Draw tank outline first
+    ctx.drawImage(tankOutline, tankX, tankY, tankWidth, tankHeight);
 
+    // Calculate barrel dimensions and position - make it a proper long barrel
+    const barrelWidth = tankWidth * 0.3;
+    const barrelHeight = tankHeight;
+        
+    // Position barrel at the center of the tank, pointing upward
+    const barrelX = tankX + tankWidth / 2 - barrelWidth / 2;
+    const barrelY = tankY - barrelHeight * 0.3;
+        
+    // Get barrel outline
+    const barrelOutline = IMAGES.barrelsOutline[tankIndex];
+        
+    // Draw barrel on top of outline
+    ctx.drawImage(tankBarrel, barrelX, barrelY, barrelWidth, barrelHeight);
+        
+    // Draw barrel outline first
+    ctx.drawImage(barrelOutline, barrelX, barrelY, barrelWidth, barrelHeight);
+    
+    
+    // Draw player name
     ctx.lineWidth = 1;
     ctx.textAlign = "center";
     ctx.font = "10px 'Consolas', monospace";
     ctx.textBaseline = "top";
-    ctx.fillStyle = COLOURS.normalName;
-    let name = p.name;
-    if (gameState == "post-game" && currState.winner == p.name) {
-        ctx.lineWidth = 2;
+    
+    if (gameState === "post-game" && currState.winner === p.name) {
         ctx.fillStyle = COLOURS.winnerName;
+        ctx.lineWidth = 2;
+    } else {
+        ctx.fillStyle = COLOURS.normalName;
+    }
+    
+    let name = p.name;
+    if (gameState === "post-game" && currState.winner === p.name) {
         name = `👑${p.name}👑`;
     }
+    
+    // Handle long names
     const NAME_CUTOFF = 10;
-    if(name.length > NAME_CUTOFF){
-        let arr = name = name.split('');
+    if (name.length > NAME_CUTOFF) {
+        let arr = name.split('');
         arr.splice(Math.floor(name.length/2), 0, '\n');
         name = arr.join('');
     }
+    
+    // Draw name with background for better visibility
     name = name.split('\n');
-    for(let i = 0; i < name.length; i++){
-        ctx.fillText(name[i], middle, top + MARGIN + 10*i, innerWidth);
+    for (let i = 0; i < name.length; i++) {
+        const textY = y + 3 + 10*i;
+        
+        // Text background for better visibility
+        const textWidth = ctx.measureText(name[i]).width;
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillRect(x + squareSide/2 - textWidth/2 - 2, textY - 1, textWidth + 4, 12);
+        
+        // Text itself
+        ctx.fillStyle = (gameState === "post-game" && currState.winner === p.name) ? 
+            COLOURS.winnerName : COLOURS.normalName;
+        ctx.fillText(name[i], x + squareSide/2, textY, squareSide);
     }
-
+    
+    // Draw stats (HP, AP, Range) with background
+    const MARGIN = 3;
+    const statsY = y + squareSide - MARGIN;
+    
     ctx.textBaseline = "bottom";
-
+    
+    // Stats background
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(x + MARGIN, statsY - 10, squareSide - MARGIN*2, 12);
+    
+    // HP (left)
     ctx.fillStyle = COLOURS.hpStat;
     ctx.textAlign = "left";
-    ctx.fillText(`${p.hp}`, left + MARGIN, bottom - MARGIN, innerWidth);
-
+    ctx.fillText(`${p.hp}`, x + MARGIN + 2, statsY, squareSide);
+    
+    // AP (center)
     ctx.fillStyle = COLOURS.apStat;
     ctx.textAlign = "center";
-    ctx.fillText(`${p.ap}`, middle, bottom - MARGIN, innerWidth);
-
+    ctx.fillText(`${p.ap}`, x + squareSide/2, statsY, squareSide);
+    
+    // Range (right)
     ctx.fillStyle = COLOURS.rangeStat;
     ctx.textAlign = "right";
-    ctx.fillText(`${p.range}`, right - MARGIN, bottom - MARGIN, innerWidth);
+    ctx.fillText(`${p.range}`, x + squareSide - MARGIN - 2, statsY, squareSide);
 }
 
 const ui = document.querySelector("div.clickedSquareUi");
@@ -191,12 +278,233 @@ function drawSelectedUi() {
     ui.style.top = y + "px";
 }
 
+// Create track mark effect
+function createTrackMark(startPos, endPos) {
+    // Create fading track marks between start and end positions
+    const startX = originX + startPos.c * squareSide + squareSide / 2;
+    const startY = originY + startPos.r * squareSide + squareSide / 2;
+    const endX = originX + endPos.c * squareSide + squareSide / 2;
+    const endY = originY + endPos.r * squareSide + squareSide / 2;
+    
+    // Calculate angle between start and end positions
+    const angle = Math.atan2(endY - startY, endX - startX);
+    
+    // Create track segments along the path
+    const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+    const numSegments = Math.max(1, Math.floor(distance / (squareSide * 0.5)));
+    
+    for (let i = 0; i <= numSegments; i++) {
+        const progress = i / numSegments;
+        const x = startX + (endX - startX) * progress;
+        const y = startY + (endY - startY) * progress;
+        
+        tracksArray.push({
+            x: x,
+            y: y,
+            angle: angle,
+            opacity: 1.0,
+            createdAt: Date.now()
+        });
+    }
+}
+
+// Create shooting effect
+function createShootingEffect(playerPos, direction) {
+    const x = originX + playerPos.c * squareSide + squareSide / 2;
+    const y = originY + playerPos.r * squareSide + squareSide / 2;
+    
+    shootingEffects.push({
+        x: x,
+        y: y,
+        direction: direction || -Math.PI/2, // Default upward
+        scale: 0, // Start small and grow
+        createdAt: Date.now(),
+        opacity: 1.0
+    });
+}
+
+// Draw track marks
+function drawTrackMarks() {
+    const TRACK_LIFETIME = 5000; // 5 seconds lifetime
+    const currentTime = Date.now();
+    const tracksToKeep = [];
+    
+    // Draw all active track marks and filter out old ones
+    for (const track of tracksArray) {
+        const age = currentTime - track.createdAt;
+        
+        if (age <= TRACK_LIFETIME) {
+            // Calculate fading opacity based on age
+            track.opacity = 1 - (age / TRACK_LIFETIME);
+            
+            // Draw track mark
+            ctx.save();
+            ctx.globalAlpha = track.opacity;
+            ctx.translate(track.x, track.y);
+            ctx.rotate(track.angle);
+            
+            const trackWidth = squareSide * 0.4;
+            const trackHeight = squareSide * 0.2;
+            
+            ctx.drawImage(
+                IMAGES.effects.tracks, 
+                -trackWidth / 2, 
+                -trackHeight / 2,
+                trackWidth, 
+                trackHeight
+            );
+            
+            ctx.restore();
+            
+            tracksToKeep.push(track);
+        }
+    }
+    
+    // Update the tracksArray to only keep active tracks
+    tracksArray = tracksToKeep;
+}
+
+// Draw shooting effects
+function drawShootingEffects() {
+    const EFFECT_LIFETIME = 1000; // 1 second lifetime
+    const currentTime = Date.now();
+    const effectsToKeep = [];
+    
+    for (const effect of shootingEffects) {
+        const age = currentTime - effect.createdAt;
+        
+        if (age <= EFFECT_LIFETIME) {
+            // Calculate animation progress
+            const progress = age / EFFECT_LIFETIME;
+            effect.scale = Math.sin(progress * Math.PI) * 0.5; // Grow and shrink
+            effect.opacity = 1 - (age / EFFECT_LIFETIME);
+            
+            // Draw explosion effect
+            ctx.save();
+            ctx.globalAlpha = effect.opacity;
+            ctx.translate(effect.x, effect.y);
+            ctx.rotate(effect.direction);
+            
+            // Move explosion to end of barrel
+            const distance = squareSide * 0.5; 
+            ctx.translate(0, -distance);
+            
+            const effectSize = squareSide * 0.4 * effect.scale;
+            
+            ctx.drawImage(
+                IMAGES.effects.explosion, 
+                -effectSize / 2, 
+                -effectSize / 2,
+                effectSize, 
+                effectSize
+            );
+            
+            ctx.restore();
+            
+            effectsToKeep.push(effect);
+        }
+    }
+    
+    // Update to only keep active effects
+    shootingEffects = effectsToKeep;
+}
+
+// Add animation for moving tanks
+function startMoveAnimation(playerName, startPos, endPos) {
+    // Animation duration in milliseconds
+    const ANIMATION_DURATION = 800;
+    
+    // Calculate start and end screen positions
+    const startX = originX + startPos.c * squareSide;
+    const startY = originY + startPos.r * squareSide;
+    const endX = originX + endPos.c * squareSide;
+    const endY = originY + endPos.r * squareSide;
+    
+    // Create animation object
+    animatedPlayers.set(playerName, {
+        startX,
+        startY,
+        endX,
+        endY,
+        currentX: startX,
+        currentY: startY,
+        startTime: Date.now(),
+        duration: ANIMATION_DURATION
+    });
+    
+    // Create track marks for the movement
+    createTrackMark(startPos, endPos);
+    
+    // Schedule animation updates
+    animationLoop();
+}
+
+// Update animations
+function updateAnimations() {
+    const currentTime = Date.now();
+    const playersToRemove = [];
+    
+    // Update each animated player
+    for (const [playerName, animation] of animatedPlayers.entries()) {
+        const elapsed = currentTime - animation.startTime;
+        const progress = Math.min(1, elapsed / animation.duration);
+        
+        if (progress < 1) {
+            // Update position using easeInOutQuad easing function
+            const eased = progress < 0.5 
+                ? 2 * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                
+            animation.currentX = animation.startX + (animation.endX - animation.startX) * eased;
+            animation.currentY = animation.startY + (animation.endY - animation.startY) * eased;
+        } else {
+            // Animation complete
+            playersToRemove.push(playerName);
+        }
+    }
+    
+    // Remove completed animations
+    for (const player of playersToRemove) {
+        animatedPlayers.delete(player);
+    }
+    
+    // Continue animation loop if there are active animations
+    if (animatedPlayers.size > 0) {
+        requestAnimationFrame(animationLoop);
+    }
+}
+
+// Animation loop
+function animationLoop() {
+    updateAnimations();
+    draw();
+}
+
 function draw() {
+    // Fill background
     ctx.fillStyle = COLOURS.gridBackground;
     ctx.fillRect(0, 0, width, height);
-
+    
+    // Draw grass tiles for the grid
+    for (let r = 0; r < dim; r++) {
+        for (let c = 0; c < dim; c++) {
+            const x = originX + c * squareSide;
+            const y = originY + r * squareSide;
+            
+            // Alternate between grass1 and grass2 in a checkerboard pattern
+            const tileImage = ((r + c) % 2 === 0) ? IMAGES.tiles.grass1 : IMAGES.tiles.grass2;
+            ctx.drawImage(tileImage, x, y, squareSide, squareSide);
+        }
+    }
+    
+    // Draw track marks from tank movements
+    drawTrackMarks();
+    
+    // Draw grid lines
     ctx.strokeStyle = COLOURS.gridLines;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 0.5; // Thinner grid lines
+    ctx.globalAlpha = 0.3; // More transparent grid lines
+    
     for (let i = 0; i <= dim; i++) {
         ctx.beginPath();
         ctx.moveTo(originX + i * squareSide, originY);
@@ -208,6 +516,11 @@ function draw() {
         ctx.lineTo(originX + gridSide, originY + i * squareSide);
         ctx.stroke();
     }
+    
+    ctx.globalAlpha = 1.0; // Reset transparency
+    
+    // Draw shooting effects
+    drawShootingEffects();
 
     if (loggedInUname && currState.players[loggedInUname].hp > 0) { /// highlight the player's range
         let playerPos = currState.players[loggedInUname].pos;
@@ -258,16 +571,31 @@ function draw() {
                 }
             }
 
+            // If this cell has a player
             if (currState.grid[r][c] != null) {
                 const p = currState.players[currState.grid[r][c]];
                 if (p.hp > 0) {
-                    drawPlayer(p);
+                    // Check if this cell is selected
+                    const isSelected = selectedSquare != null && 
+                                      selectedSquare.r == r && 
+                                      selectedSquare.c == c;
+                    
+                    // Draw the player with rotation if selected
+                    drawPlayer(p, isSelected);
                 }
             }
+            
+            // Highlight selected square
             if (selectedSquare != null && selectedSquare.r == r && selectedSquare.c == c) {
                 ctx.strokeStyle = COLOURS.selctedSquareBorder;
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2;
                 ctx.strokeRect(x, y, squareSide, squareSide);
+                
+                // Add a glow effect
+                ctx.shadowColor = COLOURS.selctedSquareBorder;
+                ctx.shadowBlur = 15;
+                ctx.strokeRect(x, y, squareSide, squareSide);
+                ctx.shadowBlur = 0;
             }
         }
     }
@@ -348,6 +676,55 @@ let pinchStartDistance = null;
 let zoomStartLevel = null;
 let pinchTouches = null;
 let pinchCenterStart = null;
+
+// Tank and tile images
+const IMAGES = {
+    tanks: {
+        blue: null,
+        green: null,
+        red: null,
+        dark: null,
+        sand: null
+    },
+    tanksOutline: {
+        blue: null,
+        green: null,
+        red: null,
+        dark: null,
+        sand: null
+    },
+    barrels: {
+        blue: null,
+        green: null,
+        red: null,
+        dark: null,
+        sand: null
+    },
+    barrelsOutline: {
+        blue: null,
+        green: null,
+        red: null,
+        dark: null,
+        sand: null
+    },
+    tiles: {
+        grass1: null,
+        grass2: null
+    },
+    effects: {
+        tracks: null,
+        explosion: null
+    }
+};
+
+// Animation states
+let animatedPlayers = new Map(); // Stores players with active animations
+let tracksArray = []; // Stores track marks that fade over time
+let shootingEffects = []; // Stores active shooting effects
+
+// Track loaded images
+let imagesLoaded = 0;
+const totalImages = 24;
 
 function zoomIn() {
     if (zoomLevel >= MAX_ZOOM) return;
@@ -646,6 +1023,19 @@ function parseMessage({ data }) {
 
 function attackModalSubmitted() {
     const amount = Number(getActiveModalBkg().querySelector("input.amount").value);
+    
+    // Create shooting effect for the attack
+    const playerPos = currState.players[loggedInUname].pos;
+    const targetPos = selectedSquare;
+    
+    // Calculate angle from player to target
+    const dx = targetPos.c - playerPos.c;
+    const dy = targetPos.r - playerPos.r;
+    const angle = Math.atan2(dy, dx);
+    
+    // Create shooting effect
+    createShootingEffect(playerPos, angle);
+    
     ws.send(JSON.stringify({
         "type": "attack",
         "patient": currState.grid[selectedSquare],
@@ -676,6 +1066,19 @@ function upgradeModalSubmitted() {
 function attackButtonPressed(askAmount = false) {
     const maxAmount = currState.players[loggedInUname].ap;
     if (maxAmount < 0) { return; }
+    
+    // Create shooting effect - from player position to target
+    const playerPos = currState.players[loggedInUname].pos;
+    const targetPos = selectedSquare;
+    
+    // Calculate angle from player to target
+    const dx = targetPos.c - playerPos.c;
+    const dy = targetPos.r - playerPos.r;
+    const angle = Math.atan2(dy, dx);
+    
+    // Create shooting effect
+    createShootingEffect(playerPos, angle);
+    
     if (!askAmount) {
         ws.send(JSON.stringify({
             "type": "attack",
@@ -706,6 +1109,15 @@ function giveButtonPressed(askAmount = false) {
 }
 
 function moveButtonPressed() {
+    // Store starting position before move
+    const playerPos = currState.players[loggedInUname].pos;
+    const startPos = new Coord(playerPos.r, playerPos.c);
+    const endPos = selectedSquare;
+    
+    // Create animation for the move
+    startMoveAnimation(loggedInUname, startPos, endPos);
+    
+    // Send move command to server
     ws.send(JSON.stringify({
         type: "move",
         coord: selectedSquare.toString()
@@ -780,6 +1192,120 @@ function showErrorModal(errorText, okFunction) {
     openModal(modalBkg);
 }
 
+// Function to load all game images
+function loadGameImages() {
+    return new Promise((resolve) => {
+        function onImageLoad() {
+            imagesLoaded++;
+            if (imagesLoaded === totalImages) {
+                resolve();
+            }
+        }
+        
+        // Load tank body images
+        IMAGES.tanks.blue = new Image();
+        IMAGES.tanks.blue.onload = onImageLoad;
+        IMAGES.tanks.blue.src = './assets/tankBody_blue.png';
+        
+        IMAGES.tanks.green = new Image();
+        IMAGES.tanks.green.onload = onImageLoad;
+        IMAGES.tanks.green.src = './assets/tankBody_green.png';
+        
+        IMAGES.tanks.red = new Image();
+        IMAGES.tanks.red.onload = onImageLoad;
+        IMAGES.tanks.red.src = './assets/tankBody_red.png';
+        
+        IMAGES.tanks.dark = new Image();
+        IMAGES.tanks.dark.onload = onImageLoad;
+        IMAGES.tanks.dark.src = './assets/tankBody_dark.png';
+        
+        IMAGES.tanks.sand = new Image();
+        IMAGES.tanks.sand.onload = onImageLoad;
+        IMAGES.tanks.sand.src = './assets/tankBody_sand.png';
+        
+        // Load tank outline images
+        IMAGES.tanksOutline.blue = new Image();
+        IMAGES.tanksOutline.blue.onload = onImageLoad;
+        IMAGES.tanksOutline.blue.src = './assets/tankBody_blue_outline.png';
+        
+        IMAGES.tanksOutline.green = new Image();
+        IMAGES.tanksOutline.green.onload = onImageLoad;
+        IMAGES.tanksOutline.green.src = './assets/tankBody_green_outline.png';
+        
+        IMAGES.tanksOutline.red = new Image();
+        IMAGES.tanksOutline.red.onload = onImageLoad;
+        IMAGES.tanksOutline.red.src = './assets/tankBody_red_outline.png';
+        
+        IMAGES.tanksOutline.dark = new Image();
+        IMAGES.tanksOutline.dark.onload = onImageLoad;
+        IMAGES.tanksOutline.dark.src = './assets/tankBody_dark_outline.png';
+        
+        IMAGES.tanksOutline.sand = new Image();
+        IMAGES.tanksOutline.sand.onload = onImageLoad;
+        IMAGES.tanksOutline.sand.src = './assets/tankBody_sand_outline.png';
+        
+        // Load barrel images
+        IMAGES.barrels.blue = new Image();
+        IMAGES.barrels.blue.onload = onImageLoad;
+        IMAGES.barrels.blue.src = './assets/tankBlue_barrel1.png';
+        
+        IMAGES.barrels.green = new Image();
+        IMAGES.barrels.green.onload = onImageLoad;
+        IMAGES.barrels.green.src = './assets/tankGreen_barrel1.png';
+        
+        IMAGES.barrels.red = new Image();
+        IMAGES.barrels.red.onload = onImageLoad;
+        IMAGES.barrels.red.src = './assets/tankRed_barrel1.png';
+        
+        IMAGES.barrels.dark = new Image();
+        IMAGES.barrels.dark.onload = onImageLoad;
+        IMAGES.barrels.dark.src = './assets/tankDark_barrel1.png';
+        
+        IMAGES.barrels.sand = new Image();
+        IMAGES.barrels.sand.onload = onImageLoad;
+        IMAGES.barrels.sand.src = './assets/tankSand_barrel1.png';
+        
+        // Load barrel outline images
+        IMAGES.barrelsOutline.blue = new Image();
+        IMAGES.barrelsOutline.blue.onload = onImageLoad;
+        IMAGES.barrelsOutline.blue.src = './assets/tankBlue_barrel1_outline.png';
+        
+        IMAGES.barrelsOutline.green = new Image();
+        IMAGES.barrelsOutline.green.onload = onImageLoad;
+        IMAGES.barrelsOutline.green.src = './assets/tankGreen_barrel1_outline.png';
+        
+        IMAGES.barrelsOutline.red = new Image();
+        IMAGES.barrelsOutline.red.onload = onImageLoad;
+        IMAGES.barrelsOutline.red.src = './assets/tankRed_barrel1_outline.png';
+        
+        IMAGES.barrelsOutline.dark = new Image();
+        IMAGES.barrelsOutline.dark.onload = onImageLoad;
+        IMAGES.barrelsOutline.dark.src = './assets/tankDark_barrel1_outline.png';
+        
+        IMAGES.barrelsOutline.sand = new Image();
+        IMAGES.barrelsOutline.sand.onload = onImageLoad;
+        IMAGES.barrelsOutline.sand.src = './assets/tankSand_barrel1_outline.png';
+        
+        // Load grass tile images
+        IMAGES.tiles.grass1 = new Image();
+        IMAGES.tiles.grass1.onload = onImageLoad;
+        IMAGES.tiles.grass1.src = './assets/tileGrass1.png';
+        
+        IMAGES.tiles.grass2 = new Image();
+        IMAGES.tiles.grass2.onload = onImageLoad;
+        IMAGES.tiles.grass2.src = './assets/tileGrass2.png';
+        
+        // Load effect images
+        IMAGES.effects.tracks = new Image();
+        IMAGES.effects.tracks.onload = onImageLoad;
+        IMAGES.effects.tracks.src = './assets/tracksSmall.png';
+        
+        IMAGES.effects.explosion = new Image();
+        IMAGES.effects.explosion.onload = onImageLoad;
+        IMAGES.effects.explosion.src = './assets/explosion1.png';
+    });
+}
+
 /**
  * 
  * @param {CanvasRenderingContext2D} _ctx
@@ -801,6 +1327,9 @@ export async function gamePageInit(_ctx, _width, _height) {
         ctx.arc(width / 2, height / 2, Math.min(width, height) / 5, start, start + 2, true);
         ctx.stroke();
     }, 250);
+    
+    // Load game assets
+    await loadGameImages();
 
     ws = new WebSocket(`${location.protocol.replace("http", "ws")}//${location.host}/api/ws`);
     ws.addEventListener("open", () => {
