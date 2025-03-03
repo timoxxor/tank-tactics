@@ -44,6 +44,10 @@ let currState = null;
 let originX = null, originY = null;
 let squareSide = null, gridSide = null;
 let dim = null;
+let zoomLevel = 1;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2.5;
+const ZOOM_STEP = 0.1;
 
 let selectedSquare = null;
 let distsFromPlayer = null;
@@ -77,7 +81,7 @@ function setup() { /// drawing setup, name borrowed from p5.js
     canvasX = cx;
     canvasY = cy;
 
-    squareSide = Math.max(Math.min(width / dim, height / dim), 45);
+    squareSide = Math.max(Math.min(width / dim, height / dim), 45) * zoomLevel;
     gridSide = squareSide * dim;
 
     if (loggedInUname && currState.players[loggedInUname].hp > 0) {
@@ -340,20 +344,209 @@ function handleClick(cx, cy) {
 let panStartCoords = null;
 let panOffset = null, originBeforePan = null;
 let panningTouch = null;
+let pinchStartDistance = null;
+let zoomStartLevel = null;
+let pinchTouches = null;
+let pinchCenterStart = null;
+
+function zoomIn() {
+    if (zoomLevel >= MAX_ZOOM) return;
+    
+    // Store center position before zoom
+    const centerX = width / 2 - originX;
+    const centerY = height / 2 - originY;
+    const centerRow = centerY / squareSide;
+    const centerCol = centerX / squareSide;
+    
+    zoomLevel = Math.min(MAX_ZOOM, zoomLevel + ZOOM_STEP);
+    
+    // Update grid dimensions with new zoom level
+    squareSide = Math.max(Math.min(width / dim, height / dim), 45) * zoomLevel;
+    gridSide = squareSide * dim;
+    
+    // Adjust origin to keep the same center position
+    originX = width / 2 - centerCol * squareSide;
+    originY = height / 2 - centerRow * squareSide;
+    
+    boundOrigin();
+    draw();
+}
+
+function zoomOut() {
+    if (zoomLevel <= MIN_ZOOM) return;
+    
+    // Store center position before zoom
+    const centerX = width / 2 - originX;
+    const centerY = height / 2 - originY;
+    const centerRow = centerY / squareSide;
+    const centerCol = centerX / squareSide;
+    
+    zoomLevel = Math.max(MIN_ZOOM, zoomLevel - ZOOM_STEP);
+    
+    // Update grid dimensions with new zoom level
+    squareSide = Math.max(Math.min(width / dim, height / dim), 45) * zoomLevel;
+    gridSide = squareSide * dim;
+    
+    // Adjust origin to keep the same center position
+    originX = width / 2 - centerCol * squareSide;
+    originY = height / 2 - centerRow * squareSide;
+    
+    boundOrigin();
+    draw();
+}
+
+function resetZoom() {
+    // Store center position before zoom
+    const centerX = width / 2 - originX;
+    const centerY = height / 2 - originY;
+    const centerRow = centerY / squareSide;
+    const centerCol = centerX / squareSide;
+    
+    zoomLevel = 1;
+    
+    // Update grid dimensions with default zoom level
+    squareSide = Math.max(Math.min(width / dim, height / dim), 45);
+    gridSide = squareSide * dim;
+    
+    // Adjust origin to keep the same center position
+    originX = width / 2 - centerCol * squareSide;
+    originY = height / 2 - centerRow * squareSide;
+    
+    boundOrigin();
+    draw();
+}
+
+function handleWheel(e) {
+    e.preventDefault();
+    
+    if (e.deltaY < 0) {
+        zoomIn();
+    } else {
+        zoomOut();
+    }
+}
+
+function addZoomListeners() {
+    document.getElementById('zoom-in').addEventListener('click', zoomIn);
+    document.getElementById('zoom-out').addEventListener('click', zoomOut);
+    document.getElementById('zoom-reset').addEventListener('click', resetZoom);
+    
+    // Add wheel event for PC zoom
+    ctx.canvas.addEventListener('wheel', handleWheel, { passive: false });
+}
+
+// Calculate distance between two points
+function getDistance(p1, p2) {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+}
+
+// Get midpoint between two points
+function getMidpoint(p1, p2) {
+    return {
+        x: (p1.x + p2.x) / 2,
+        y: (p1.y + p2.y) / 2
+    };
+}
+
+function handlePinchZoom(ev) {
+    if (ev.touches.length !== 2) return;
+    
+    ev.preventDefault();
+    
+    // Get current touch positions
+    const touch1 = {
+        x: ev.touches[0].clientX - canvasX,
+        y: ev.touches[0].clientY - canvasY
+    };
+    
+    const touch2 = {
+        x: ev.touches[1].clientX - canvasX,
+        y: ev.touches[1].clientY - canvasY
+    };
+    
+    // Calculate current distance between touches
+    const currentDistance = getDistance(touch1, touch2);
+    
+    // Calculate center point of the pinch
+    const currentCenter = getMidpoint(touch1, touch2);
+    
+    // If this is the start of a pinch gesture
+    if (!pinchStartDistance) {
+        pinchStartDistance = currentDistance;
+        zoomStartLevel = zoomLevel;
+        pinchTouches = [ev.touches[0].identifier, ev.touches[1].identifier];
+        pinchCenterStart = currentCenter;
+        return;
+    }
+    
+    // Check if the active touches match our stored pinch touches
+    const touchIds = [ev.touches[0].identifier, ev.touches[1].identifier];
+    if (!pinchTouches.every(id => touchIds.includes(id))) {
+        return;
+    }
+    
+    // Calculate zoom scale factor
+    const scaleFactor = currentDistance / pinchStartDistance;
+    const newZoomLevel = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomStartLevel * scaleFactor));
+    
+    // Store center position before zoom
+    const centerX = pinchCenterStart.x;
+    const centerY = pinchCenterStart.y;
+    const centerRow = (centerY - originY) / squareSide;
+    const centerCol = (centerX - originX) / squareSide;
+    
+    // Update zoom level
+    zoomLevel = newZoomLevel;
+    
+    // Update grid dimensions with new zoom level
+    squareSide = Math.max(Math.min(width / dim, height / dim), 45) * zoomLevel;
+    gridSide = squareSide * dim;
+    
+    // Adjust origin to keep the pinch center position
+    originX = pinchCenterStart.x - centerCol * squareSide;
+    originY = pinchCenterStart.y - centerRow * squareSide;
+    
+    boundOrigin();
+    draw();
+}
 
 function addCanvasListeners() {
     ctx.canvas.addEventListener("click", ev => {
         handleClick(ev.clientX - canvasX, ev.clientY - canvasY);
-    })
+    });
+    
     ctx.canvas.addEventListener("touchstart", ev => {
-        if (ev.touches.length != 1) { return; }
+        // Handle pinch gesture (2 fingers)
+        if (ev.touches.length === 2) {
+            pinchStartDistance = null;
+            handlePinchZoom(ev);
+            return;
+        }
+        
+        // Reset pinch variables if we're not in a pinch gesture
+        pinchStartDistance = null;
+        zoomStartLevel = null;
+        pinchTouches = null;
+        pinchCenterStart = null;
+        
+        // Handle pan gesture (1 finger)
+        if (ev.touches.length !== 1) { return; }
         panningTouch = ev.touches[0].identifier;
         panStartCoords = { x: ev.touches[0].clientX - canvasX, y: ev.touches[0].clientY - canvasY };
         panOffset = { x: 0, y: 0 };
         originBeforePan = { x: originX, y: originY };
     });
+    
     ctx.canvas.addEventListener("touchmove", ev => {
         ev.preventDefault();
+        
+        // Handle pinch/zoom with 2 fingers
+        if (ev.touches.length === 2) {
+            handlePinchZoom(ev);
+            return;
+        }
+        
+        // Handle pan with 1 finger
         for (const touch of ev.changedTouches) {
             if (touch.identifier != panningTouch) { continue }
             panOffset.x = touch.clientX - canvasX - panStartCoords.x;
@@ -364,7 +557,15 @@ function addCanvasListeners() {
             draw();
         }
     });
+    
     ctx.canvas.addEventListener("touchcancel", ev => {
+        // Reset pinch variables
+        pinchStartDistance = null;
+        zoomStartLevel = null;
+        pinchTouches = null;
+        pinchCenterStart = null;
+        
+        // Handle pan cancellation
         for (const touch of ev.changedTouches) {
             if (touch.identifier != panningTouch) { continue }
             console.warn("touch canceled: ", ev);
@@ -378,7 +579,22 @@ function addCanvasListeners() {
             draw();
         }
     });
+    
     ctx.canvas.addEventListener("touchend", ev => {
+        // Reset pinch variables if any of the pinch touches ended
+        if (pinchTouches && ev.changedTouches.length > 0) {
+            for (const touch of ev.changedTouches) {
+                if (pinchTouches.includes(touch.identifier)) {
+                    pinchStartDistance = null;
+                    zoomStartLevel = null;
+                    pinchTouches = null;
+                    pinchCenterStart = null;
+                    break;
+                }
+            }
+        }
+        
+        // Handle pan touch end
         for (const touch of ev.changedTouches) {
             if (touch.identifier != panningTouch) { continue }
             panningTouch = null;
@@ -592,6 +808,7 @@ export async function gamePageInit(_ctx, _width, _height) {
 
         addCanvasListeners();
         addSelectedMenuListeners();
+        addZoomListeners();
         document.querySelector("div#errorModalBkg button#errorModalOKButton").addEventListener("click", errorModalOKClicked);
 
         ws.addEventListener("message", parseMessage);

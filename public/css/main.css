@@ -17,10 +17,11 @@
 main {
     height: calc(100dvh - var(--nav-height));
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     color: var(--text-col);
     background-color: var(--bkg-col);
-
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;

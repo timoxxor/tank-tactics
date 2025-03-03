@@ -11,3 +11,26 @@
 button:disabled {
     display: none;
 }
+
+.zoom-controls {
+    position: fixed;
+    bottom: calc(var(--nav-height) + 15px);
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+}
+
+.zoom-controls button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background-color: rgba(50, 50, 50, 0.8);
+    cursor: pointer;
+}
