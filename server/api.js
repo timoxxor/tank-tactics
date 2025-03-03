@@ -12,6 +12,7 @@ import { beginApGivingInterval } from "./main.js";
 const COOKIE_EXPIRY = 2 * 24 * 60 * 60 * 1000;/// millis
 
 const getHash = e => crypto.createHash("sha256").update(e).digest("base64");
+const getHash32 = e => crypto.createHash("sha256").update(e).digest("hex");
 const genUuid = () => crypto.randomUUID();
 const genSalt = () => crypto.randomBytes(4).toString("base64");
 const getUTCDateAfterMilis = milis => new Date(Number(new Date()) + milis);
@@ -33,20 +34,28 @@ function _createSession(uname) {
     return { status: 204, setCookies: [`session=${session}; expires=${expires.toUTCString()}; path=/`] };
 }
 
+function _userKey(uname) {
+    return getHash32(`${uname}|${process.env.ADMIN_LOGIN}`)
+}
+
 function register(query, cookies) {
     if (getSessionUser(cookies)) {
         return { status: 400, data: "You can't register when you're logged in." };
     }
 
-    if (!query["uname"] || !query["passwd"]) {
+    if (!query["uname"] || !query["passwd"] || !query["key"]) {
         return { status: 400, data: "Must include `uname` and `passwd` query params." };
     }
-    let { uname, passwd } = query;
-    /// validate uname
-    let unameRegex = /^[\w-_]{4,20}$/;
-    if (!unameRegex.test(uname)) {
-        return { status: 400, data: "Username doesn't match requirements." };
+    let { uname, passwd, key } = query;
+    if (_userKey(uname) !== key) {
+	console.log(uname, key, _userKey(uname))
+        return { status: 400, data: "Invalid key." };
     }
+    /// validate uname
+    // let unameRegex = /^[\w-_]{4,20}$/;
+    // if (!unameRegex.test(uname)) {
+    //     return { status: 400, data: "Username doesn't match requirements." };
+    // }
     /// check availability
     if (db.accounts[uname]) {
         return { status: 400, data: "Username is taken." }
@@ -171,7 +180,7 @@ function evalJS(query, cookies, req) {
 }
 
 /**
- * 
+ *
  * @param {url.URL} parsed
  * @param {https.IncomingMessage} req
  * @param {https.ServerResponse<https.IncomingMessage>} res

@@ -18,23 +18,24 @@ async function _register() {
 
     let uname = document.querySelector("div.modalBkg.active input.uname").value;
     let passwd = document.querySelector("div.modalBkg.active input.passwd").value;
+    let key = document.querySelector("div.modalBkg.active input.key").value;
 
-    if (!uname || !passwd) {
-        modalError.innerText = "You must include both username and password.";
+    if (!uname || !passwd || !key) {
+        modalError.innerText = "You must include both username, password and key.";
         return;
     }
 
-    let unameRegex = /^[\w-_]{4,20}$/;
-    if (!unameRegex.test(uname)) {
-        let errorMsg = "Username must be between 4 and 20 characters must consist of english letters, numbers, \'-\' or \'_\'.";
-        return modalError.innerText = errorMsg;
-    }
+    // let unameRegex = /^[\w-_]{4,20}$/;
+    // if (!unameRegex.test(uname)) {
+    //     let errorMsg = "Username must be between 4 and 20 characters must consist of english letters, numbers, \'-\' or \'_\'.";
+    //     return modalError.innerText = errorMsg;
+    // }
 
     if (passwd.length < 8) {
         return modalError.innerText = "Password should be minimum 8 characters long.";
     }
 
-    let resp = await fetch(`${location.origin}/api/register?uname=${uname}&passwd=${passwd}`, { method: "POST" });
+    let resp = await fetch(`${location.origin}/api/register?uname=${uname}&passwd=${passwd}&key=${key}`, { method: "POST" });
     if (resp.ok) { location.reload(); }
     let text = await resp.text();
     modalError.innerText = text;

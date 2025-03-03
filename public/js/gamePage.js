@@ -50,6 +50,8 @@ let distsFromPlayer = null;
 
 let errorModalOKFunction = null;
 
+let main = null;
+
 function boundOrigin() {
     if (gridSide > width) {
         if (originX > 0) { originX = 0; }
@@ -72,12 +74,15 @@ function centerCoordinates(pos) {
     boundOrigin();
 }
 
-function setup() { /// drawing setup, name borrowed from p5.js
+function setup() { /// drawing setup, name borrowed from p5.j
+	main = document.querySelector("main")
     let { x: cx, y: cy } = ctx.canvas.getBoundingClientRect();
     canvasX = cx;
     canvasY = cy;
 
+
     squareSide = Math.max(Math.min(width / dim, height / dim), 45);
+    //squareSide = Math.min(width / dim, height / dim)
     gridSide = squareSide * dim;
 
     if (loggedInUname && currState.players[loggedInUname].hp > 0) {
@@ -184,7 +189,7 @@ function drawSelectedUi() {
     }
 
     ui.style.left = x + "px";
-    ui.style.top = y + "px";
+    ui.style.top = (y - main.scrollTop) + "px";
 }
 
 function draw() {
@@ -324,7 +329,7 @@ function updateSelectedMenu() {
 }
 
 function handleClick(cx, cy) {
-    const x = cx - originX, y = cy - originY;
+    const x = cx - originX, y = cy - originY + main.scrollTop;
     let pos = new Coord(Math.floor(y / squareSide), Math.floor(x / squareSide));
 
     if (selectedSquare != null && selectedSquare.equals(pos)) {
