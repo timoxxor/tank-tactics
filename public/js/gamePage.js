@@ -51,6 +51,8 @@ const ZOOM_STEP = 0.1;
 
 let selectedSquare = null;
 let distsFromPlayer = null;
+// Store barrel rotation angle for each player
+let playerBarrelAngles = {};
 
 let errorModalOKFunction = null;
 
@@ -157,7 +159,6 @@ function drawPlayer(p, isSelected = false) {
     const centerX = x + squareSide / 2;
     const centerY = y + squareSide / 2;
     
-    // Regular non-rotated drawing
     // Center the tank in the cell
     const tankX = x + (squareSide - tankWidth) / 2;
     const tankY = y + (squareSide - tankHeight) / 2;
@@ -167,26 +168,53 @@ function drawPlayer(p, isSelected = false) {
     // Draw tank body
     ctx.drawImage(tankBody, tankX, tankY, tankWidth, tankHeight);
         
-    // Draw tank outline first
+    // Draw tank outline
     ctx.drawImage(tankOutline, tankX, tankY, tankWidth, tankHeight);
 
-    // Calculate barrel dimensions and position - make it a proper long barrel
+    // Calculate barrel dimensions and position
     const barrelWidth = tankWidth * 0.3;
-    const barrelHeight = tankHeight;
+    const barrelHeight = tankHeight * 0.8;
         
-    // Position barrel at the center of the tank, pointing upward
-    const barrelX = tankX + tankWidth / 2 - barrelWidth / 2;
-    const barrelY = tankY - barrelHeight * 0.3;
-        
+    // Determine barrel angle - point to selected square or use saved angle
+    let barrelAngle;
+    if (p.name in playerBarrelAngles) {
+        barrelAngle = playerBarrelAngles[p.name] + Math.PI/2;
+    } else {
+        barrelAngle = -Math.PI/2; // Default pointing up
+    }
+    
+    // Save context for barrel rotation
+    ctx.save();
+    
+    // Translate to center of tank (pivot point for rotation)
+    ctx.translate(tankX + tankWidth/2, tankY + tankHeight/2);
+    
+    // Rotate to point in proper direction
+    ctx.rotate(barrelAngle);
+    
     // Get barrel outline
     const barrelOutline = IMAGES.barrelsOutline[tankIndex];
-        
-    // Draw barrel on top of outline
-    ctx.drawImage(tankBarrel, barrelX, barrelY, barrelWidth, barrelHeight);
-        
-    // Draw barrel outline first
-    ctx.drawImage(barrelOutline, barrelX, barrelY, barrelWidth, barrelHeight);
     
+    // Draw barrel (adjusting position to account for rotation around center)
+    ctx.drawImage(
+        tankBarrel, 
+        -barrelWidth/2,
+        -barrelHeight/2 - tankHeight/3, // Position barrel at top of tank
+        barrelWidth, 
+        barrelHeight
+    );
+    
+    // Draw barrel outline
+    ctx.drawImage(
+        barrelOutline, 
+        -barrelWidth/2,
+        -barrelHeight/2 - tankHeight/3, // Position barrel at top of tank
+        barrelWidth, 
+        barrelHeight
+    );
+    
+    // Restore context after barrel drawing
+    ctx.restore();
     
     // Draw player name
     ctx.lineWidth = 1;
@@ -215,45 +243,47 @@ function drawPlayer(p, isSelected = false) {
     }
     
     // Draw name with background for better visibility
-    name = name.split('\n');
-    for (let i = 0; i < name.length; i++) {
-        const textY = y + 3 + 10*i;
+    if (zoomLevel > 0.7){
+        name = name.split('\n');
+        for (let i = 0; i < name.length; i++) {
+            const textY = y + 3 + 10*i;
         
-        // Text background for better visibility
-        const textWidth = ctx.measureText(name[i]).width;
+            // Text background for better visibility
+            const textWidth = ctx.measureText(name[i]).width;
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.fillRect(x + squareSide/2 - textWidth/2 - 2, textY - 1, textWidth + 4, 12);
+        
+            // Text itself
+            ctx.fillStyle = (gameState === "post-game" && currState.winner === p.name) ? 
+                COLOURS.winnerName : COLOURS.normalName;
+            ctx.fillText(name[i], x + squareSide/2, textY, squareSide);
+        }
+    
+        // Draw stats (HP, AP, Range) with background
+        const MARGIN = 3;
+        const statsY = y + squareSide - MARGIN;
+    
+        ctx.textBaseline = "bottom";
+    
+        // Stats background
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.fillRect(x + squareSide/2 - textWidth/2 - 2, textY - 1, textWidth + 4, 12);
-        
-        // Text itself
-        ctx.fillStyle = (gameState === "post-game" && currState.winner === p.name) ? 
-            COLOURS.winnerName : COLOURS.normalName;
-        ctx.fillText(name[i], x + squareSide/2, textY, squareSide);
+        ctx.fillRect(x + MARGIN, statsY - 10, squareSide - MARGIN*2, 12);
+    
+        // HP (left)
+        ctx.fillStyle = COLOURS.hpStat;
+        ctx.textAlign = "left";
+        ctx.fillText(`${p.hp}`, x + MARGIN + 2, statsY, squareSide);
+    
+        // AP (center)
+        ctx.fillStyle = COLOURS.apStat;
+        ctx.textAlign = "center";
+        ctx.fillText(`${p.ap}`, x + squareSide/2, statsY, squareSide);
+    
+        // Range (right)
+        ctx.fillStyle = COLOURS.rangeStat;
+        ctx.textAlign = "right";
+        ctx.fillText(`${p.range}`, x + squareSide - MARGIN - 2, statsY, squareSide);
     }
-    
-    // Draw stats (HP, AP, Range) with background
-    const MARGIN = 3;
-    const statsY = y + squareSide - MARGIN;
-    
-    ctx.textBaseline = "bottom";
-    
-    // Stats background
-    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    ctx.fillRect(x + MARGIN, statsY - 10, squareSide - MARGIN*2, 12);
-    
-    // HP (left)
-    ctx.fillStyle = COLOURS.hpStat;
-    ctx.textAlign = "left";
-    ctx.fillText(`${p.hp}`, x + MARGIN + 2, statsY, squareSide);
-    
-    // AP (center)
-    ctx.fillStyle = COLOURS.apStat;
-    ctx.textAlign = "center";
-    ctx.fillText(`${p.ap}`, x + squareSide/2, statsY, squareSide);
-    
-    // Range (right)
-    ctx.fillStyle = COLOURS.rangeStat;
-    ctx.textAlign = "right";
-    ctx.fillText(`${p.range}`, x + squareSide - MARGIN - 2, statsY, squareSide);
 }
 
 const ui = document.querySelector("div.clickedSquareUi");
@@ -309,14 +339,23 @@ function createTrackMark(startPos, endPos) {
 }
 
 // Create shooting effect
-function createShootingEffect(playerPos, direction) {
+function createShootingEffect(playerName, targetPos) {
+    const playerPos = currState.players[playerName].pos;
     const x = originX + playerPos.c * squareSide + squareSide / 2;
     const y = originY + playerPos.r * squareSide + squareSide / 2;
+    
+    // Calculate angle from player to target
+    const dx = targetPos.c - playerPos.c;
+    const dy = targetPos.r - playerPos.r;
+    const direction = Math.atan2(dy, dx);
+    
+    // Update the player's barrel angle
+    playerBarrelAngles[playerName] = direction;
     
     shootingEffects.push({
         x: x,
         y: y,
-        direction: direction || -Math.PI/2, // Default upward
+        direction: direction,
         scale: 0, // Start small and grow
         createdAt: Date.now(),
         opacity: 1.0
@@ -658,6 +697,41 @@ function updateSelectedMenu() {
 function handleClick(cx, cy) {
     const x = cx - originX, y = cy - originY;
     let pos = new Coord(Math.floor(y / squareSide), Math.floor(x / squareSide));
+
+    // If this is a new selection (not deselecting)
+    if (selectedSquare == null || !selectedSquare.equals(pos)) {
+        // If logged in player exists and is alive
+        if (loggedInUname && currState.players[loggedInUname].hp > 0) {
+            const playerPos = currState.players[loggedInUname].pos;
+            
+            // Calculate angle from player to selected tile
+            const dx = pos.c - playerPos.c;
+            const dy = pos.r - playerPos.r;
+            const angle = Math.atan2(dy, dx);
+            
+            // Store the angle for the player's barrel
+            playerBarrelAngles[loggedInUname] = angle;
+        }
+        
+        // Also calculate angles for any player if their tile is selected
+        if (currState.grid[pos] != null) {
+            const selectedPlayerName = currState.grid[pos];
+            const selectedPlayerPos = currState.players[selectedPlayerName].pos;
+            
+            // For other players, make them point at the current player
+            if (loggedInUname && selectedPlayerName != loggedInUname && 
+                currState.players[loggedInUname].hp > 0) {
+                
+                const playerPos = currState.players[loggedInUname].pos;
+                const dx = playerPos.c - selectedPlayerPos.c;
+                const dy = playerPos.r - selectedPlayerPos.r;
+                const angle = Math.atan2(dy, dx);
+                
+                // Store the angle for the selected player's barrel
+                playerBarrelAngles[selectedPlayerName] = angle;
+            }
+        }
+    }
 
     if (selectedSquare != null && selectedSquare.equals(pos)) {
         selectedSquare = null;
@@ -1025,16 +1099,7 @@ function attackModalSubmitted() {
     const amount = Number(getActiveModalBkg().querySelector("input.amount").value);
     
     // Create shooting effect for the attack
-    const playerPos = currState.players[loggedInUname].pos;
-    const targetPos = selectedSquare;
-    
-    // Calculate angle from player to target
-    const dx = targetPos.c - playerPos.c;
-    const dy = targetPos.r - playerPos.r;
-    const angle = Math.atan2(dy, dx);
-    
-    // Create shooting effect
-    createShootingEffect(playerPos, angle);
+    createShootingEffect(loggedInUname, selectedSquare);
     
     ws.send(JSON.stringify({
         "type": "attack",
@@ -1067,17 +1132,8 @@ function attackButtonPressed(askAmount = false) {
     const maxAmount = currState.players[loggedInUname].ap;
     if (maxAmount < 0) { return; }
     
-    // Create shooting effect - from player position to target
-    const playerPos = currState.players[loggedInUname].pos;
-    const targetPos = selectedSquare;
-    
-    // Calculate angle from player to target
-    const dx = targetPos.c - playerPos.c;
-    const dy = targetPos.r - playerPos.r;
-    const angle = Math.atan2(dy, dx);
-    
-    // Create shooting effect
-    createShootingEffect(playerPos, angle);
+    // Create shooting effect from player to target
+    createShootingEffect(loggedInUname, selectedSquare);
     
     if (!askAmount) {
         ws.send(JSON.stringify({
@@ -1095,6 +1151,23 @@ function attackButtonPressed(askAmount = false) {
 function giveButtonPressed(askAmount = false) {
     const maxAmount = currState.players[loggedInUname].ap;
     if (maxAmount < 0) { return; }
+    
+    // Calculate angle from player to target for barrel rotation
+    const playerPos = currState.players[loggedInUname].pos;
+    const targetPos = selectedSquare;
+    const dx = targetPos.c - playerPos.c;
+    const dy = targetPos.r - playerPos.r;
+    const angle = Math.atan2(dy, dx);
+    
+    // Update the player's barrel angle without shooting effect
+    playerBarrelAngles[loggedInUname] = angle;
+    
+    // If target is a player, have them point back at us
+    if (currState.grid[selectedSquare]) {
+        const targetPlayer = currState.grid[selectedSquare];
+        playerBarrelAngles[targetPlayer] = Math.atan2(-dy, -dx); // Reverse direction
+    }
+    
     if (!askAmount) {
         ws.send(JSON.stringify({
             "type": "give",
@@ -1113,6 +1186,14 @@ function moveButtonPressed() {
     const playerPos = currState.players[loggedInUname].pos;
     const startPos = new Coord(playerPos.r, playerPos.c);
     const endPos = selectedSquare;
+    
+    // Calculate angle for movement direction
+    const dx = endPos.c - startPos.c;
+    const dy = endPos.r - startPos.r;
+    const angle = Math.atan2(dy, dx);
+    
+    // Update the player's barrel angle to point in direction of movement
+    playerBarrelAngles[loggedInUname] = angle;
     
     // Create animation for the move
     startMoveAnimation(loggedInUname, startPos, endPos);
