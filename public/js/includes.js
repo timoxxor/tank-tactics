@@ -14,12 +14,12 @@ async function getIncludeHTML(incl) {
 }
 
 async function addIncludes() {
-    let list = Array.from(document.querySelectorAll("i.incl")).map(e=>({
+    let list = Array.from(document.querySelectorAll("i.incl")).map(e => ({
         element: e,
         includeName: e.getAttribute("data-incl")
     }));
 
-    for(include in list){
+    for (include in list) {
         const incl = list[include];
         incl.element.outerHTML = await await getIncludeHTML(incl.includeName);;
     }
