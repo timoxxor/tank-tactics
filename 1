@@ -129,18 +129,23 @@ function drawPlayer(p, isSelected = false) {
 
     // Determine which tank to draw based on player
     let tankIndex;
+    let isCurrentPlayer = p.name === loggedInUname;
 
-    // Other players get different colored tanks based on name hash
-    const hash = p.name.split("").reduce((a, b) => {
-        a = ((a << 5) - a) + b.charCodeAt(0);
-        return a & a;
-    }, 0);
+    if (gameState === "post-game" && currState.winner === p.name) {
+        // Winner gets a gold tank
+        tankIndex = "sand";
+    } else if (isCurrentPlayer) {
+        // Current player gets a green tank
+        tankIndex = "green";
+    } else {
+        // Other players get different colored tanks based on name hash
+        const hash = p.name.split("").reduce((a, b) => {
+            a = ((a << 5) - a) + b.charCodeAt(0);
+            return a & a;
+        }, 0);
 
-    const options = ["red", "dark", "green", "sand"];
-    tankIndex = options[Math.abs(hash) % options.length];
-
-    if (p.name === "Redstoyn33") {
-        tankIndex = options[0];
+        const options = ["blue", "red", "dark"];
+        tankIndex = options[Math.abs(hash) % options.length];
     }
 
     const tankBody = IMAGES.tanks[tankIndex];
