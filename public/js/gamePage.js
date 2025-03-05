@@ -447,7 +447,6 @@ function drawShootingEffects() {
             effectsToKeep.push(effect);
         }
     }
-
     // Update to only keep active effects
     shootingEffects = effectsToKeep;
 }
@@ -571,6 +570,26 @@ function animationLoop() {
     draw();
 }
 
+const tileMap = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+];
+
+
 function draw() {
     // Fill background
     ctx.fillStyle = COLOURS.gridBackground;
@@ -582,8 +601,139 @@ function draw() {
             const x = originX + c * squareSide;
             const y = originY + r * squareSide;
 
-            // Alternate between grass1 and grass2 in a checkerboard pattern
-            const tileImage = ((r + c) % 2 === 0) ? IMAGES.tiles.grass1 : IMAGES.tiles.grass2;
+            let tileImage;
+            switch (tileMap[r][c]) {
+                // Grass tiles
+                case 0:
+                    tileImage = IMAGES.tiles.grass1;
+                    break;
+                case 1:
+                    tileImage = IMAGES.tiles.grass2;
+                    break;
+                case 2:
+                    tileImage = IMAGES.tiles.grass_roadCornerLL;
+                    break;
+                case 3:
+                    tileImage = IMAGES.tiles.grass_roadCornerLR;
+                    break;
+                case 4:
+                    tileImage = IMAGES.tiles.grass_roadCornerUL;
+                    break;
+                case 5:
+                    tileImage = IMAGES.tiles.grass_roadCornerUR;
+                    break;
+                case 6:
+                    tileImage = IMAGES.tiles.grass_roadCrossing;
+                    break;
+                case 7:
+                    tileImage = IMAGES.tiles.grass_roadCrossingRound;
+                    break;
+                case 8:
+                    tileImage = IMAGES.tiles.grass_roadEast;
+                    break;
+                case 9:
+                    tileImage = IMAGES.tiles.grass_roadNorth;
+                    break;
+                case 10:
+                    tileImage = IMAGES.tiles.grass_roadSplitE;
+                    break;
+                case 11:
+                    tileImage = IMAGES.tiles.grass_roadSplitN;
+                    break;
+                case 12:
+                    tileImage = IMAGES.tiles.grass_roadSplitS;
+                    break;
+                case 13:
+                    tileImage = IMAGES.tiles.grass_roadSplitW;
+                    break;
+                case 14:
+                    tileImage = IMAGES.tiles.grass_roadTransitionE_dirt;
+                    break;
+                case 15:
+                    tileImage = IMAGES.tiles.grass_roadTransitionE;
+                    break;
+                case 16:
+                    tileImage = IMAGES.tiles.grass_roadTransitionN_dirt;
+                    break;
+                case 17:
+                    tileImage = IMAGES.tiles.grass_roadTransitionN;
+                    break;
+                case 18:
+                    tileImage = IMAGES.tiles.grass_roadTransitionS_dirt;
+                    break;
+                case 19:
+                    tileImage = IMAGES.tiles.grass_roadTransitionS;
+                    break;
+                case 20:
+                    tileImage = IMAGES.tiles.grass_roadTransitionW_dirt;
+                    break;
+                case 21:
+                    tileImage = IMAGES.tiles.grass_roadTransitionW;
+                    break;
+                case 22:
+                    tileImage = IMAGES.tiles.grass_transitionE;
+                    break;
+                case 23:
+                    tileImage = IMAGES.tiles.grass_transitionN;
+                    break;
+                case 24:
+                    tileImage = IMAGES.tiles.grass_transitionS;
+                    break;
+                case 25:
+                    tileImage = IMAGES.tiles.grass_transitionW;
+                    break;
+
+                // Sand tiles
+                case 26:
+                    tileImage = IMAGES.tiles.sand1;
+                    break;
+                case 27:
+                    tileImage = IMAGES.tiles.sand2;
+                    break;
+                case 28:
+                    tileImage = IMAGES.tiles.sand_roadCornerLL;
+                    break;
+                case 29:
+                    tileImage = IMAGES.tiles.sand_roadCornerLR;
+                    break;
+                case 30:
+                    tileImage = IMAGES.tiles.sand_roadCornerUL;
+                    break;
+                case 31:
+                    tileImage = IMAGES.tiles.sand_roadCornerUR;
+                    break;
+                case 32:
+                    tileImage = IMAGES.tiles.sand_roadCrossing;
+                    break;
+                case 33:
+                    tileImage = IMAGES.tiles.sand_roadCrossingRound;
+                    break;
+                case 34:
+                    tileImage = IMAGES.tiles.sand_roadEast;
+                    break;
+                case 35:
+                    tileImage = IMAGES.tiles.sand_roadNorth;
+                    break;
+                case 36:
+                    tileImage = IMAGES.tiles.sand_roadSplitE;
+                    break;
+                case 37:
+                    tileImage = IMAGES.tiles.sand_roadSplitN;
+                    break;
+                case 38:
+                    tileImage = IMAGES.tiles.sand_roadSplitS;
+                    break;
+                case 39:
+                    tileImage = IMAGES.tiles.sand_roadSplitW;
+                    break;
+
+                // Default to grass1 if the tile type is unknown
+                default:
+                    tileImage = IMAGES.tiles.grass1;
+                    break;
+            }
+
+            // Draw the tile image
             ctx.drawImage(tileImage, x, y, squareSide, squareSide);
         }
     }
@@ -836,7 +986,45 @@ const IMAGES = {
     },
     tiles: {
         grass1: null,
-        grass2: null
+        grass2: null,
+        grass_roadCornerLL: null,
+        grass_roadCornerLR: null,
+        grass_roadCornerUL: null,
+        grass_roadCornerUR: null,
+        grass_roadCrossing: null,
+        grass_roadCrossingRound: null,
+        grass_roadEast: null,
+        grass_roadNorth: null,
+        grass_roadSplitE: null,
+        grass_roadSplitN: null,
+        grass_roadSplitS: null,
+        grass_roadSplitW: null,
+        grass_roadTransitionE_dirt: null,
+        grass_roadTransitionE: null,
+        grass_roadTransitionN_dirt: null,
+        grass_roadTransitionN: null,
+        grass_roadTransitionS_dirt: null,
+        grass_roadTransitionS: null,
+        grass_roadTransitionW_dirt: null,
+        grass_roadTransitionW: null,
+        grass_transitionE: null,
+        grass_transitionN: null,
+        grass_transitionS: null,
+        grass_transitionW: null,
+        sand1: null,
+        sand2: null,
+        sand_roadCornerLL: null,
+        sand_roadCornerLR: null,
+        sand_roadCornerUL: null,
+        sand_roadCornerUR: null,
+        sand_roadCrossing: null,
+        sand_roadCrossingRound: null,
+        sand_roadEast: null,
+        sand_roadNorth: null,
+        sand_roadSplitE: null,
+        sand_roadSplitN: null,
+        sand_roadSplitS: null,
+        sand_roadSplitW: null,
     },
     effects: {
         tracks: null,
@@ -852,7 +1040,7 @@ let shootingEffects = []; // Stores active shooting effects
 
 // Track loaded images
 let imagesLoaded = 0;
-const totalImages = 24;
+const totalImages = 62;
 
 function zoomIn() {
     if (zoomLevel >= MAX_ZOOM) return;
@@ -1326,10 +1514,88 @@ function showErrorModal(errorText, okFunction) {
     errorModalOKFunction = okFunction;
     openModal(modalBkg);
 }
-
-// Function to load all game images
 function loadGameImages() {
     return new Promise((resolve) => {
+        const imagePaths = {
+            tanks: {
+                blue: './assets/tankBody_blue.png',
+                green: './assets/tankBody_green.png',
+                red: './assets/tankBody_red.png',
+                dark: './assets/tankBody_dark.png',
+                sand: './assets/tankBody_sand.png',
+            },
+            tanksOutline: {
+                blue: './assets/tankBody_blue_outline.png',
+                green: './assets/tankBody_green_outline.png',
+                red: './assets/tankBody_red_outline.png',
+                dark: './assets/tankBody_dark_outline.png',
+                sand: './assets/tankBody_sand_outline.png',
+            },
+            barrels: {
+                blue: './assets/tankBlue_barrel1.png',
+                green: './assets/tankGreen_barrel1.png',
+                red: './assets/tankRed_barrel1.png',
+                dark: './assets/tankDark_barrel1.png',
+                sand: './assets/tankSand_barrel1.png',
+            },
+            barrelsOutline: {
+                blue: './assets/tankBlue_barrel1_outline.png',
+                green: './assets/tankGreen_barrel1_outline.png',
+                red: './assets/tankRed_barrel1_outline.png',
+                dark: './assets/tankDark_barrel1_outline.png',
+                sand: './assets/tankSand_barrel1_outline.png',
+            },
+            tiles: {
+                grass1: './assets/tileGrass1.png',
+                grass2: './assets/tileGrass2.png',
+                grass_roadCornerLL: './assets/tileGrass_roadCornerLL.png',
+                grass_roadCornerLR: './assets/tileGrass_roadCornerLR.png',
+                grass_roadCornerUL: './assets/tileGrass_roadCornerUL.png',
+                grass_roadCornerUR: './assets/tileGrass_roadCornerUR.png',
+                grass_roadCrossing: './assets/tileGrass_roadCrossing.png',
+                grass_roadCrossingRound: './assets/tileGrass_roadCrossingRound.png',
+                grass_roadEast: './assets/tileGrass_roadEast.png',
+                grass_roadNorth: './assets/tileGrass_roadNorth.png',
+                grass_roadSplitE: './assets/tileGrass_roadSplitE.png',
+                grass_roadSplitN: './assets/tileGrass_roadSplitN.png',
+                grass_roadSplitS: './assets/tileGrass_roadSplitS.png',
+                grass_roadSplitW: './assets/tileGrass_roadSplitW.png',
+                grass_roadTransitionE_dirt: './assets/tileGrass_roadTransitionE_dirt.png',
+                grass_roadTransitionE: './assets/tileGrass_roadTransitionE.png',
+                grass_roadTransitionN_dirt: './assets/tileGrass_roadTransitionN_dirt.png',
+                grass_roadTransitionN: './assets/tileGrass_roadTransitionN.png',
+                grass_roadTransitionS_dirt: './assets/tileGrass_roadTransitionS_dirt.png',
+                grass_roadTransitionS: './assets/tileGrass_roadTransitionS.png',
+                grass_roadTransitionW_dirt: './assets/tileGrass_roadTransitionW_dirt.png',
+                grass_roadTransitionW: './assets/tileGrass_roadTransitionW.png',
+                grass_transitionE: './assets/tileGrass_transitionE.png',
+                grass_transitionN: './assets/tileGrass_transitionN.png',
+                grass_transitionS: './assets/tileGrass_transitionS.png',
+                grass_transitionW: './assets/tileGrass_transitionW.png',
+                sand1: './assets/tileSand1.png',
+                sand2: './assets/tileSand2.png',
+                sand_roadCornerLL: './assets/tileSand_roadCornerLL.png',
+                sand_roadCornerLR: './assets/tileSand_roadCornerLR.png',
+                sand_roadCornerUL: './assets/tileSand_roadCornerUL.png',
+                sand_roadCornerUR: './assets/tileSand_roadCornerUR.png',
+                sand_roadCrossing: './assets/tileSand_roadCrossing.png',
+                sand_roadCrossingRound: './assets/tileSand_roadCrossingRound.png',
+                sand_roadEast: './assets/tileSand_roadEast.png',
+                sand_roadNorth: './assets/tileSand_roadNorth.png',
+                sand_roadSplitE: './assets/tileSand_roadSplitE.png',
+                sand_roadSplitN: './assets/tileSand_roadSplitN.png',
+                sand_roadSplitS: './assets/tileSand_roadSplitS.png',
+                sand_roadSplitW: './assets/tileSand_roadSplitW.png',
+            },
+            effects: {
+                tracks: './assets/tracksSmall.png',
+                explosion: './assets/explosion1.png',
+            },
+        };
+
+        let imagesLoaded = 0;
+        const totalImages = Object.values(imagePaths).reduce((total, category) => total + Object.keys(category).length, 0);
+
         function onImageLoad() {
             imagesLoaded++;
             if (imagesLoaded === totalImages) {
@@ -1337,114 +1603,19 @@ function loadGameImages() {
             }
         }
 
-        // Load tank body images
-        IMAGES.tanks.blue = new Image();
-        IMAGES.tanks.blue.onload = onImageLoad;
-        IMAGES.tanks.blue.src = './assets/tankBody_blue.png';
-
-        IMAGES.tanks.green = new Image();
-        IMAGES.tanks.green.onload = onImageLoad;
-        IMAGES.tanks.green.src = './assets/tankBody_green.png';
-
-        IMAGES.tanks.red = new Image();
-        IMAGES.tanks.red.onload = onImageLoad;
-        IMAGES.tanks.red.src = './assets/tankBody_red.png';
-
-        IMAGES.tanks.dark = new Image();
-        IMAGES.tanks.dark.onload = onImageLoad;
-        IMAGES.tanks.dark.src = './assets/tankBody_dark.png';
-
-        IMAGES.tanks.sand = new Image();
-        IMAGES.tanks.sand.onload = onImageLoad;
-        IMAGES.tanks.sand.src = './assets/tankBody_sand.png';
-
-        // Load tank outline images
-        IMAGES.tanksOutline.blue = new Image();
-        IMAGES.tanksOutline.blue.onload = onImageLoad;
-        IMAGES.tanksOutline.blue.src = './assets/tankBody_blue_outline.png';
-
-        IMAGES.tanksOutline.green = new Image();
-        IMAGES.tanksOutline.green.onload = onImageLoad;
-        IMAGES.tanksOutline.green.src = './assets/tankBody_green_outline.png';
-
-        IMAGES.tanksOutline.red = new Image();
-        IMAGES.tanksOutline.red.onload = onImageLoad;
-        IMAGES.tanksOutline.red.src = './assets/tankBody_red_outline.png';
-
-        IMAGES.tanksOutline.dark = new Image();
-        IMAGES.tanksOutline.dark.onload = onImageLoad;
-        IMAGES.tanksOutline.dark.src = './assets/tankBody_dark_outline.png';
-
-        IMAGES.tanksOutline.sand = new Image();
-        IMAGES.tanksOutline.sand.onload = onImageLoad;
-        IMAGES.tanksOutline.sand.src = './assets/tankBody_sand_outline.png';
-
-        // Load barrel images
-        IMAGES.barrels.blue = new Image();
-        IMAGES.barrels.blue.onload = onImageLoad;
-        IMAGES.barrels.blue.src = './assets/tankBlue_barrel1.png';
-
-        IMAGES.barrels.green = new Image();
-        IMAGES.barrels.green.onload = onImageLoad;
-        IMAGES.barrels.green.src = './assets/tankGreen_barrel1.png';
-
-        IMAGES.barrels.red = new Image();
-        IMAGES.barrels.red.onload = onImageLoad;
-        IMAGES.barrels.red.src = './assets/tankRed_barrel1.png';
-
-        IMAGES.barrels.dark = new Image();
-        IMAGES.barrels.dark.onload = onImageLoad;
-        IMAGES.barrels.dark.src = './assets/tankDark_barrel1.png';
-
-        IMAGES.barrels.sand = new Image();
-        IMAGES.barrels.sand.onload = onImageLoad;
-        IMAGES.barrels.sand.src = './assets/tankSand_barrel1.png';
-
-        // Load barrel outline images
-        IMAGES.barrelsOutline.blue = new Image();
-        IMAGES.barrelsOutline.blue.onload = onImageLoad;
-        IMAGES.barrelsOutline.blue.src = './assets/tankBlue_barrel1_outline.png';
-
-        IMAGES.barrelsOutline.green = new Image();
-        IMAGES.barrelsOutline.green.onload = onImageLoad;
-        IMAGES.barrelsOutline.green.src = './assets/tankGreen_barrel1_outline.png';
-
-        IMAGES.barrelsOutline.red = new Image();
-        IMAGES.barrelsOutline.red.onload = onImageLoad;
-        IMAGES.barrelsOutline.red.src = './assets/tankRed_barrel1_outline.png';
-
-        IMAGES.barrelsOutline.dark = new Image();
-        IMAGES.barrelsOutline.dark.onload = onImageLoad;
-        IMAGES.barrelsOutline.dark.src = './assets/tankDark_barrel1_outline.png';
-
-        IMAGES.barrelsOutline.sand = new Image();
-        IMAGES.barrelsOutline.sand.onload = onImageLoad;
-        IMAGES.barrelsOutline.sand.src = './assets/tankSand_barrel1_outline.png';
-
-        // Load grass tile images
-        IMAGES.tiles.grass1 = new Image();
-        IMAGES.tiles.grass1.onload = onImageLoad;
-        IMAGES.tiles.grass1.src = './assets/tileGrass1.png';
-
-        IMAGES.tiles.grass2 = new Image();
-        IMAGES.tiles.grass2.onload = onImageLoad;
-        IMAGES.tiles.grass2.src = './assets/tileGrass2.png';
-
-        // Load effect images
-        IMAGES.effects.tracks = new Image();
-        IMAGES.effects.tracks.onload = onImageLoad;
-        IMAGES.effects.tracks.src = './assets/tracksSmall.png';
-
-        IMAGES.effects.explosion = new Image();
-        IMAGES.effects.explosion.onload = onImageLoad;
-        IMAGES.effects.explosion.src = './assets/explosion1.png';
+        // Load images dynamically
+        for (const category in imagePaths) {
+            IMAGES[category] = {};
+            for (const key in imagePaths[category]) {
+                const img = new Image();
+                img.onload = onImageLoad;
+                img.src = imagePaths[category][key];
+                IMAGES[category][key] = img;
+            }
+        }
     });
 }
 
-/**
- * 
- * @param {CanvasRenderingContext2D} _ctx
-*/
 export async function gamePageInit(_ctx, _width, _height) {
     ctx = _ctx;
     width = _width;

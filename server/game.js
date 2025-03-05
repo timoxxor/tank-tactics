@@ -1,6 +1,6 @@
 import { appendFileSync } from "fs";
 import Queue from "../lib/queue.js";
-import {Coord, crd} from "../lib/coord.js";
+import { Coord, crd } from "../lib/coord.js";
 const { ringDist } = Coord;
 import Grid from "../lib/grid.js";
 import { shuffleArray, humanTimestamp } from "../lib/util.js";
@@ -25,8 +25,8 @@ const FAIL = err => ({ success: false, result: err });
  * @param {string} event 
  * @returns {{success: boolean, result: change[]}}
  */
-const SUCCEED = (changes, event, writeLog=true) => {
-    if(writeLog) appendFileSync("log.txt", `[${humanTimestamp()}] ${event}\r\n`);
+const SUCCEED = (changes, event, writeLog = true) => {
+    if (writeLog) appendFileSync("log.txt", `[${humanTimestamp()}] ${event}\r\n`);
     return { success: true, result: changes };
 };
 
@@ -35,7 +35,7 @@ export default class Game {
     constructor(users) {
         if (arguments.length == 0) { return; } // intended to create an empty object to use with deserialise
         // this.dim = 2 * Math.ceil(Math.sqrt(users.length)) + 1;
-        this.dim = 22; /// original was 22x22
+        this.dim = 16; /// original was 22x22
         this.grid = new Grid(this.dim);
         let positions = spreadPlayers(users.length, this.dim);
         this.players = {};
@@ -80,17 +80,17 @@ export default class Game {
         }
         return JSON.stringify(obj);
     }
-    serialiseForClient(forPlayer=null){ /// anonymise player votes
+    serialiseForClient(forPlayer = null) { /// anonymise player votes
         let obj = {
             dim: this.dim,
             alivePlayers: this.alivePlayers,
             gameOver: this.gameOver,
             winner: this.winner,
-            players: {...this.players},
+            players: { ...this.players },
             grid: this.grid.serialise()
         }
-        for(const uname in obj.players){
-            if(uname != forPlayer){
+        for (const uname in obj.players) {
+            if (uname != forPlayer) {
                 obj.players[uname].vote = null;
             }
         }
@@ -165,7 +165,7 @@ export default class Game {
         if (this.players[patient].hp <= 0) {
             this.alivePlayers--;
             for (const uname in this.players) {
-                if(this.players[uname].vote == patient){ this.players[uname].vote = null; }
+                if (this.players[uname].vote == patient) { this.players[uname].vote = null; }
             }
             this.grid[this.players[patient].pos] = null;
             this.players[patient].pos = null;
@@ -179,7 +179,7 @@ export default class Game {
     tryAttack(agent, patient, amount) {
         if (this.players[agent].hp <= 0) return FAIL("You're dead.");
         if (!this.players[patient]) return FAIL("That player doesn't exist.");
-        if(this.players[patient].hp <= 0) return FAIL("This player is already dead.");
+        if (this.players[patient].hp <= 0) return FAIL("This player is already dead.");
         if (amount <= 0) return FAIL("You need to deal a positive amount of damage.");
         if (amount > this.players[agent].ap) return FAIL("Not enough AP to attack that much.");
         if (ringDist(this.players[agent].pos, this.players[patient].pos) > this.players[agent].range)
@@ -198,7 +198,7 @@ export default class Game {
     tryGive(agent, patient, amount) {
         if (this.players[agent].hp <= 0) return FAIL("You're dead.");
         if (!this.players[patient]) return FAIL("That player doesn't exist.");
-        if(this.players[patient].hp <= 0) return FAIL("This player is dead.");
+        if (this.players[patient].hp <= 0) return FAIL("This player is dead.");
         if (amount <= 0) return FAIL("You need to give a positive amount of AP.");
         if (amount > this.players[agent].ap) return FAIL("Not enough AP to give that much.");
         if (ringDist(this.players[agent].pos, this.players[patient].pos) > this.players[agent].range)
@@ -236,9 +236,9 @@ export default class Game {
         /// votes
         let counts = {};
         for (const uname in this.players) { counts[uname] = 0; }
-        for(const uname in this.players){
+        for (const uname in this.players) {
             const p = this.players[uname];
-            if(p.hp > 0 || p.vote == null){ continue; }
+            if (p.hp > 0 || p.vote == null) { continue; }
             counts[p.vote]++;
             this.players[p.name].vote = null;
             voteChangedPlayers.add(p.name);
