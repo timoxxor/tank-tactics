@@ -375,6 +375,21 @@ function createShootingEffect(playerName, targetPos) {
         opacity: 1.0
     });
     
+    // Play shooting sound
+    if (soundEnabled) {
+        // Determine if this is an attack or taking damage
+        const isAttack = playerName === loggedInUname;
+        const targetCell = currState.grid[targetPos];
+        
+        if (targetCell || (targetPos.r === playerPos.r && targetPos.c === playerPos.c)) {
+            // If there's a player at target position or if targeting self (damage), play explosion
+            playSound('explosion');
+        } else {
+            // Regular shooting sound
+            playSound('tankShoot');
+        }
+    }
+    
     // Start animation loop if needed
     if (!animationLoopRunning) {
         animationLoop();
@@ -570,7 +585,8 @@ function startMoveAnimation(playerName, startPos, endPos) {
             currentX: startX,
             currentY: startY,
             startTime: Date.now(),
-            duration: ANIMATION_DURATION
+            duration: ANIMATION_DURATION,
+            playerName: playerName  // Store the player name for reference
         });
     } else {
         // Calculate start and end screen positions
@@ -588,12 +604,25 @@ function startMoveAnimation(playerName, startPos, endPos) {
             currentX: startX,
             currentY: startY,
             startTime: Date.now(),
-            duration: ANIMATION_DURATION
+            duration: ANIMATION_DURATION,
+            playerName: playerName  // Store the player name for reference
         });
     }
     
     // Create track marks for the movement
     createTrackMark(startPos, endPos);
+    
+    // Play tank movement sound if it's the player's tank or a nearby tank
+    // Only play for the logged-in player's movement to avoid sound clutter
+    if (playerName === loggedInUname) {
+        // Stop any previous movement sound
+        stopSound('tankMove');
+        
+        // Start a new movement sound that will only play during the animation
+        playSound('tankMove');
+        
+        // We'll stop this in updateAnimations when the animation completes
+    }
     
     // Schedule animation updates if not already running
     if (!animationLoopRunning) {
@@ -605,6 +634,7 @@ function startMoveAnimation(playerName, startPos, endPos) {
 function updateAnimations() {
     const currentTime = Date.now();
     const playersToRemove = [];
+    let playerMovementCompleted = false;
 
     // Update each animated player
     for (const [playerName, animation] of animatedPlayers.entries()) {
@@ -618,12 +648,27 @@ function updateAnimations() {
         } else {
             // Animation complete
             playersToRemove.push(playerName);
+            
+            // Check if this was the logged-in player's movement
+            if (playerName === loggedInUname) {
+                playerMovementCompleted = true;
+            }
         }
     }
 
     // Remove completed animations
     for (const player of playersToRemove) {
         animatedPlayers.delete(player);
+    }
+    
+    // Stop tank movement sound if the player's movement has completed
+    if (playerMovementCompleted) {
+        stopSound('tankMove');
+    }
+    
+    // If there are no moving tanks and the movement sound is still playing, stop it
+    if (animatedPlayers.size === 0) {
+        stopSound('tankMove');
     }
 }
 
@@ -968,6 +1013,17 @@ function handleClick(cx, cy) {
     const x = cx - originX, y = cy - originY;
     let pos = new Coord(Math.floor(y / squareSide), Math.floor(x / squareSide));
 
+    // Play different sounds depending on what was clicked
+    if (soundEnabled) {
+        if (currState.grid[pos] != null) {
+            // Selecting a player tank
+            playSound('select');
+        } else {
+            // Selecting an empty square
+            playSound('click');
+        }
+    }
+
     // Handle selection toggling first for responsiveness
     const wasSelected = (selectedSquare != null && selectedSquare.equals(pos));
     if (wasSelected) {
@@ -1032,6 +1088,322 @@ let pinchTouches = null;
 let pinchCenterStart = null;
 
 // Tank and tile images
+// Sound system
+let soundEnabled = true;
+let backgroundMusicPlaying = false;
+let currentBackgroundMusic = null;
+
+// Sound configuration - allows adjusting each sound individually
+const SOUND_CONFIG = {
+    master: {
+        enabled: true,
+        volume: 1.0
+    },
+    ui: {
+        enabled: true,
+        volume: 0.3,
+        click: { enabled: true, volume: 0.3 },
+        select: { enabled: true, volume: 0.3 },
+        error: { enabled: true, volume: 0.4 },
+        success: { enabled: true, volume: 0.5 }
+    },
+    game: {
+        enabled: true,
+        volume: 0.4,
+        tankMove: { enabled: true, volume: 0.2 },
+        tankShoot: { enabled: true, volume: 0.2 },
+        explosion: { enabled: true, volume: 0.2 },
+        upgrade: { enabled: true, volume: 0.4 },
+        giveAP: { enabled: true, volume: 0.4 },
+        takeDamage: { enabled: true, volume: 0.3 },
+        victory: { enabled: true, volume: 0.6 },
+        defeat: { enabled: true, volume: 0.5 }
+    },
+    music: {
+        enabled: true,
+        volume: 0.2,
+        background: { enabled: true, volume: 0.2 }
+    }
+};
+
+// Active sound instances - to track and stop ongoing sounds
+let activeSounds = {
+    tankMove: null
+};
+
+const SOUNDS = {
+    ui: {
+        click: null,
+        select: null,
+        error: null,
+        success: null
+    },
+    game: {
+        tankMove: null,
+        tankShoot: null,
+        explosion: null,
+        upgrade: null,
+        giveAP: null,
+        takeDamage: null,
+        victory: null,
+        defeat: null
+    },
+    music: {
+        background: null
+    }
+};
+
+// Sound functions
+function initSounds() {
+    // Using WAV files from FreeSFX
+    SOUNDS.ui.click = new Audio("/assets/sounds/effects/click.wav");
+    SOUNDS.ui.select = new Audio("/assets/sounds/effects/select.wav");
+    SOUNDS.ui.error = new Audio("/assets/sounds/effects/error.wav");
+    SOUNDS.ui.success = new Audio("/assets/sounds/effects/success.wav");
+    
+    SOUNDS.game.tankMove = new Audio("/assets/sounds/effects/tankMove.wav");
+    SOUNDS.game.tankShoot = new Audio("/assets/sounds/effects/tankShoot.wav");
+    SOUNDS.game.explosion = new Audio("/assets/sounds/effects/explosion.wav");
+    SOUNDS.game.upgrade = new Audio("/assets/sounds/effects/upgrade.wav");
+    SOUNDS.game.giveAP = new Audio("/assets/sounds/effects/giveAP.wav");
+    SOUNDS.game.takeDamage = new Audio("/assets/sounds/effects/takeDamage.wav");
+    SOUNDS.game.victory = new Audio("/assets/sounds/effects/victory.wav");
+    SOUNDS.game.defeat = new Audio("/assets/sounds/effects/defeat.wav");
+    
+    SOUNDS.music.background = new Audio("/assets/sounds/music/background.wav");
+    SOUNDS.music.background.loop = true;
+    SOUNDS.music.background.volume = 0.3;
+    
+    // Set up volume for game sounds
+    Object.values(SOUNDS.game).forEach(sound => {
+        if (sound) sound.volume = 0.5;
+    });
+    
+    // Fix for browsers requiring user interaction to play audio
+    // Add a "sound initialized" flag
+    window.soundsInitialized = false;
+    
+    // Add a one-time click event listener to the document to enable audio
+    document.addEventListener('click', function initAudioOnFirstClick() {
+        if (window.soundsInitialized) return;
+        
+        console.log("Initializing audio on user interaction");
+        
+        // Create a silent audio context to unlock audio
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Play and immediately pause all sounds to "unlock" them
+        const allSounds = [
+            ...Object.values(SOUNDS.ui),
+            ...Object.values(SOUNDS.game),
+            ...Object.values(SOUNDS.music)
+        ];
+        
+        // Play a short silent sound to unlock audio playback
+        const silentSound = audioContext.createBuffer(1, 1, 22050);
+        const source = audioContext.createBufferSource();
+        source.buffer = silentSound;
+        source.connect(audioContext.destination);
+        source.start(0);
+        
+        // Try to play and immediately pause all our sound objects
+        allSounds.forEach(sound => {
+            if (sound) {
+                const playPromise = sound.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        sound.pause();
+                        sound.currentTime = 0;
+                    }).catch(e => {
+                        console.log("Error unlocking audio:", e);
+                    });
+                }
+            }
+        });
+        
+        window.soundsInitialized = true;
+        document.removeEventListener('click', initAudioOnFirstClick);
+        
+        // Start background music if enabled after user interaction
+        if (soundEnabled && gameState === "in-game") {
+            setTimeout(() => playBackgroundMusic(), 500);
+        }
+    }, { once: false });
+}
+
+// Toggle all sounds or specific sound categories
+function toggleSound(category = 'all') {
+    if (category === 'all') {
+        // Toggle master sound
+        soundEnabled = !soundEnabled;
+        SOUND_CONFIG.master.enabled = soundEnabled;
+        
+        // Stop all active sounds if turning off
+        if (!soundEnabled) {
+            // Stop background music
+            stopBackgroundMusic();
+            
+            // Stop all active sound effects
+            Object.keys(activeSounds).forEach(soundName => {
+                if (activeSounds[soundName]) {
+                    stopSound(soundName);
+                }
+            });
+        } else if (gameState === "in-game") {
+            // Restart background music if turning on during game
+            playBackgroundMusic();
+        }
+    } else if (SOUND_CONFIG[category]) {
+        // Toggle specific category
+        SOUND_CONFIG[category].enabled = !SOUND_CONFIG[category].enabled;
+        
+        // Stop sounds in this category if turning off
+        if (!SOUND_CONFIG[category].enabled) {
+            if (category === 'music') {
+                stopBackgroundMusic();
+            } else {
+                // Stop all active sounds in this category
+                Object.keys(SOUNDS[category]).forEach(soundName => {
+                    stopSound(soundName);
+                });
+            }
+        } else if (category === 'music' && gameState === "in-game") {
+            // Restart background music if turning on music during game
+            playBackgroundMusic();
+        }
+    }
+    
+    return soundEnabled;
+}
+
+function playSound(soundName, options = {}) {
+    if (!soundEnabled || !window.soundsInitialized || !SOUND_CONFIG.master.enabled) return;
+    
+    // Check what category this sound belongs to
+    let category = null;
+    let sound = null;
+    
+    if (SOUNDS.ui[soundName]) {
+        category = 'ui';
+        sound = SOUNDS.ui[soundName];
+    } else if (SOUNDS.game[soundName]) {
+        category = 'game';
+        sound = SOUNDS.game[soundName];
+    } else if (SOUNDS.music[soundName]) {
+        category = 'music';
+        sound = SOUNDS.music[soundName];
+    }
+    
+    // Return if sound not found or category disabled
+    if (!sound || !SOUND_CONFIG[category].enabled) return;
+    
+    // Check if this specific sound is enabled
+    if (SOUND_CONFIG[category][soundName] && !SOUND_CONFIG[category][soundName].enabled) return;
+    
+    // Check if this is a looping sound that's already playing
+    if (options.loop && activeSounds[soundName]) {
+        // If it's already playing, just return the active instance
+        return activeSounds[soundName];
+    }
+    
+    // For tank movement sound, stop any existing instance before creating a new one
+    if (soundName === 'tankMove' && activeSounds.tankMove) {
+        stopSound('tankMove');
+    }
+    
+    try {
+        // Create a new Audio instance
+        const soundCopy = new Audio(sound.src);
+        
+        // Set volume from config
+        const masterVolume = SOUND_CONFIG.master.volume;
+        const categoryVolume = SOUND_CONFIG[category].volume;
+        const specificVolume = SOUND_CONFIG[category][soundName] ? 
+                              SOUND_CONFIG[category][soundName].volume : 1.0;
+                              
+        // Calculate final volume (master × category × specific)
+        soundCopy.volume = masterVolume * categoryVolume * specificVolume;
+        
+        // Set loop if specified
+        if (options.loop) {
+            soundCopy.loop = true;
+            
+            // Store reference to looping sounds so we can stop them later
+            activeSounds[soundName] = soundCopy;
+        }
+        
+        // Add event listener to clean up non-looping sounds
+        if (!options.loop) {
+            soundCopy.addEventListener('ended', function() {
+                if (activeSounds[soundName] === soundCopy) {
+                    activeSounds[soundName] = null;
+                }
+            }, { once: true });
+        }
+        
+        // Play the sound with error handling
+        const playPromise = soundCopy.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.catch(e => {
+                console.error(`Error playing sound ${soundName}:`, e);
+                if (activeSounds[soundName] === soundCopy) {
+                    activeSounds[soundName] = null;
+                }
+            });
+        }
+        
+        return soundCopy;
+    } catch (e) {
+        console.error(`Error setting up sound ${soundName}:`, e);
+        return null;
+    }
+}
+
+// Function to stop a specific sound
+function stopSound(soundName) {
+    if (activeSounds[soundName]) {
+        try {
+            activeSounds[soundName].pause();
+            activeSounds[soundName].currentTime = 0;
+            activeSounds[soundName] = null;
+        } catch (e) {
+            console.error(`Error stopping sound ${soundName}:`, e);
+        }
+    }
+}
+
+function playBackgroundMusic() {
+    if (!soundEnabled || backgroundMusicPlaying || !window.soundsInitialized) return;
+    if (!SOUND_CONFIG.master.enabled || !SOUND_CONFIG.music.enabled || !SOUND_CONFIG.music.background.enabled) return;
+    
+    try {
+        // Use our new sound system for background music
+        currentBackgroundMusic = playSound('background', { loop: true });
+        
+        if (currentBackgroundMusic) {
+            backgroundMusicPlaying = true;
+            console.log("Background music started successfully");
+        } else {
+            // Try again with user interaction if it failed
+            const retryMusic = () => {
+                document.removeEventListener('click', retryMusic);
+                setTimeout(() => playBackgroundMusic(), 500);
+            };
+            
+            document.addEventListener('click', retryMusic, { once: true });
+        }
+    } catch (e) {
+        console.error("Error starting background music:", e);
+    }
+}
+
+function stopBackgroundMusic() {
+    stopSound('background');
+    backgroundMusicPlaying = false;
+}
+
 const IMAGES = {
     tanks: {
         blue: null,
@@ -1390,6 +1762,11 @@ function parseMessage({ data }) {
         dim = currState.dim;
         console.log(currState);
         setup();
+        
+        // Start background music if we're in-game and sounds are enabled
+        if (soundEnabled && currState.gameOver === false) {
+            playBackgroundMusic();
+        }
     } else if (msg.type == "updates") {
         msg.updates.forEach(u => {
             if (u.stat == "pos") {
@@ -1399,6 +1776,17 @@ function parseMessage({ data }) {
                     // Player died or was removed
                     currState.grid[oldPos] = null;
                     currState.players[u.player].pos = null;
+                    
+                    // Play explosion sound if a player died
+                    if (soundEnabled) {
+                        // Use explosion sound for tank death
+                        playSound('explosion');
+                        
+                        // If the current player died, play defeat sound
+                        if (u.player === loggedInUname) {
+                            playSound('defeat');
+                        }
+                    }
                 } else {
                     // Player moved - animate movement
                     const newCoord = crd(u.val);
@@ -1434,26 +1822,72 @@ function parseMessage({ data }) {
                 const newHp = u.val;
                 
                 // If player took damage (HP decreased)
-                if (newHp < oldHp && newHp > 0) {
+                if (newHp < oldHp) {
                     // Trigger visual effect for damage
-                    // This could be a shooting effect from the last attacker, but we don't
-                    // know who attacked, so we'll just indicate damage on the tank itself
                     const playerPos = currState.players[u.player].pos;
                     if (playerPos) {
                         createShootingEffect(u.player, playerPos);
+                        
+                        // Play explosion sound for damage
+                        if (soundEnabled) {
+                            if (newHp <= 0) {
+                                // Tank destroyed
+                                playSound('explosion');
+                                
+                                // If current player was destroyed
+                                if (u.player === loggedInUname) {
+                                    playSound('defeat');
+                                }
+                            } else {
+                                // Tank took damage but survived
+                                playSound('takeDamage');
+                            }
+                        }
+                    }
+                } else if (newHp > oldHp) {
+                    // Healing sound if we implement that feature
+                    if (soundEnabled && u.player === loggedInUname) {
+                        playSound('success');
                     }
                 }
                 
                 // Update the player's HP
                 currState.players[u.player][u.stat] = u.val;
+            } else if (u.stat == "range") {
+                // If player's range was increased (upgrade)
+                const oldRange = currState.players[u.player].range;
+                if (u.val > oldRange && u.player === loggedInUname && soundEnabled) {
+                    playSound('upgrade');
+                }
+                
+                // Update the range
+                currState.players[u.player][u.stat] = u.val;
             } else {
-                // Update other stats (AP, range, etc.)
+                // Update other stats (AP, etc.)
                 currState.players[u.player][u.stat] = u.val;
             }
         });
     } else if (msg.type == "winner") {
+        // Play victory sound if we won, defeat if not
+        if (soundEnabled) {
+            if (currState.winner === loggedInUname) {
+                playSound('victory');
+            } else {
+                playSound('defeat');
+            }
+        }
+        
+        // Stop music
+        stopBackgroundMusic();
+        
+        // Redirect to list page
         location.href = "/list";
     } else if (msg.type == "error") {
+        // Play error sound
+        if (soundEnabled) {
+            playSound('error');
+        }
+        
         showErrorModal(msg.msg, null);
     }
     
@@ -1498,6 +1932,11 @@ function attackButtonPressed(askAmount = false) {
     const maxAmount = currState.players[loggedInUname].ap;
     if (maxAmount < 0) { return; }
 
+    // Play UI click sound
+    if (soundEnabled) {
+        playSound('click');
+    }
+
     // Create shooting effect from player to target
     createShootingEffect(loggedInUname, selectedSquare);
 
@@ -1518,6 +1957,11 @@ function giveButtonPressed(askAmount = false) {
     const maxAmount = currState.players[loggedInUname].ap;
     if (maxAmount < 0) { return; }
 
+    // Play UI click sound
+    if (soundEnabled) {
+        playSound('click');
+    }
+
     // Calculate angle from player to target for barrel rotation
     const playerPos = currState.players[loggedInUname].pos;
     const targetPos = selectedSquare;
@@ -1532,6 +1976,11 @@ function giveButtonPressed(askAmount = false) {
     if (currState.grid[selectedSquare]) {
         const targetPlayer = currState.grid[selectedSquare];
         playerBarrelAngles[targetPlayer] = Math.atan2(-dy, -dx); // Reverse direction
+        
+        // Play the AP giving sound
+        if (soundEnabled) {
+            playSound('giveAP');
+        }
     }
 
     if (!askAmount) {
@@ -1548,6 +1997,11 @@ function giveButtonPressed(askAmount = false) {
 }
 
 function moveButtonPressed() {
+    // Play click sound
+    if (soundEnabled) {
+        playSound('click');
+    }
+    
     // Store starting position before move
     const playerPos = currState.players[loggedInUname].pos;
     const startPos = new Coord(playerPos.r, playerPos.c);
@@ -1585,7 +2039,18 @@ function voteButtonPressed() {
 function upgradeButtonPressed(askAmount = false) {
     const maxAmount = Math.floor(currState.players[loggedInUname].ap / 2);
     if (maxAmount < 0) { return; }
+    
+    // Play click sound
+    if (soundEnabled) {
+        playSound('click');
+    }
+    
     if (!askAmount) {
+        // Play upgrade sound
+        if (soundEnabled) {
+            playSound('upgrade');
+        }
+        
         ws.send(JSON.stringify({
             "type": "upgrade",
             "amount": 1
@@ -1758,23 +2223,68 @@ export async function gamePageInit(_ctx, _width, _height) {
         ctx.stroke();
     }, 250);
 
-    // Load game assets
-    await loadGameImages();
-
-    ws = new WebSocket(`${location.protocol.replace("http", "ws")}//${location.host}/api/ws`);
-    ws.addEventListener("open", () => {
-        clearInterval(loadingAnimationInterval);
-
-        addCanvasListeners();
-        addSelectedMenuListeners();
-        addZoomListeners();
-        document.querySelector("div#errorModalBkg button#errorModalOKButton").addEventListener("click", errorModalOKClicked);
-
-        ws.addEventListener("message", parseMessage);
-        const inCaseOfEmergency = () => {
-            showErrorModal("Connection error, reload page.", location.reload.bind(location));
-        };
-        ws.addEventListener("error", inCaseOfEmergency);
-        ws.addEventListener("close", inCaseOfEmergency);
+    // Create sound toggle button
+    const soundToggleButton = document.createElement('button');
+    soundToggleButton.textContent = '🔊';
+    soundToggleButton.id = 'sound-toggle';
+    soundToggleButton.style.position = 'absolute';
+    soundToggleButton.style.top = '10px';
+    soundToggleButton.style.right = '10px';
+    soundToggleButton.style.zIndex = '1000';
+    soundToggleButton.style.background = 'rgba(0, 0, 0, 0.5)';
+    soundToggleButton.style.color = 'white';
+    soundToggleButton.style.border = 'none';
+    soundToggleButton.style.borderRadius = '50%';
+    soundToggleButton.style.width = '40px';
+    soundToggleButton.style.height = '40px';
+    soundToggleButton.style.fontSize = '20px';
+    soundToggleButton.style.cursor = 'pointer';
+    document.body.appendChild(soundToggleButton);
+    
+    soundToggleButton.addEventListener('click', () => {
+        const isSoundOn = toggleSound();
+        soundToggleButton.textContent = isSoundOn ? '🔊' : '🔇';
+        
+        // Play UI sound
+        if (isSoundOn) {
+            playSound('select');
+        }
     });
+
+    // Load game assets
+    try {
+        // Initialize sounds first
+        initSounds();
+        
+        // Load game images
+        await loadGameImages();
+        
+        // Connect to game server
+        ws = new WebSocket(`${location.protocol.replace("http", "ws")}//${location.host}/api/ws`);
+        ws.addEventListener("open", () => {
+            clearInterval(loadingAnimationInterval);
+
+            addCanvasListeners();
+            addSelectedMenuListeners();
+            addZoomListeners();
+            document.querySelector("div#errorModalBkg button#errorModalOKButton").addEventListener("click", errorModalOKClicked);
+
+            ws.addEventListener("message", parseMessage);
+            const inCaseOfEmergency = () => {
+                if (soundEnabled) {
+                    playSound('error');
+                }
+                showErrorModal("Connection error, reload page.", location.reload.bind(location));
+            };
+            ws.addEventListener("error", inCaseOfEmergency);
+            ws.addEventListener("close", inCaseOfEmergency);
+            
+            // Don't auto-start background music - wait for user interaction
+            // We'll let the initAudioOnFirstClick handler start it
+        });
+    } catch (error) {
+        console.error("Error initializing game:", error);
+        clearInterval(loadingAnimationInterval);
+        showErrorModal("Failed to load game resources. Please reload the page.", location.reload.bind(location));
+    }
 }
