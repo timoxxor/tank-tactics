@@ -4,27 +4,363 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Console</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .command-section {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        input[type="password"] {
+            padding: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .output {
+            background-color: #333;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            min-height: 200px;
+            margin-top: 20px;
+        }
+        .command-help {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            color: #ff5555;
+        }
+    </style>
 </head>
 <body>
-    <label for="password">Password: </label><input type="password" name="password" id="password"><br>
-    <label for="command">Command: </label>
-    <textarea name="command" id="command"></textarea>
-    <button onclick="send()">Send Command</button>
-    <p></p>
+    <div class="container">
+        <h1>Game Admin Console</h1>
+        
+        <div class="command-section">
+            <label for="password">Admin Password: </label>
+            <input type="password" name="password" id="password">
+            
+            <div class="button-group">
+                <button onclick="runCommand('giveAP')">Give AP to All</button>
+                <button onclick="runCommand('restartGame')">Restart Game</button>
+                <button onclick="runCommand('endGame')">End Game</button>
+                <button onclick="runCommand('returnToRegistration')">Return to Registration</button>
+                <button onclick="showPlayerActions()">Player Actions</button>
+            </div>
+        </div>
+
+        <div id="playerActions" style="display:none;">
+            <h3>Player Actions</h3>
+            <div class="button-group">
+                <button onclick="runCommand('giveAPToPlayer')">Give AP to Player</button>
+                <button onclick="runCommand('giveHPToPlayer')">Give HP to Player</button>
+                <button onclick="runCommand('giveRangeToPlayer')">Give Range to Player</button>
+                <button onclick="runCommand('teleportPlayer')">Teleport Player</button>
+                <button onclick="runCommand('killPlayer')">Kill Player</button>
+            </div>
+        </div>
+        
+        <div class="command-section">
+            <label for="command">Custom JavaScript Command: </label>
+            <textarea name="command" id="command" placeholder="Enter custom JavaScript to execute on the server..."></textarea>
+            <button onclick="send()">Execute</button>
+        </div>
+        
+        <div class="output" id="output"></div>
+        
+        <div class="command-help">
+            <h3>Quick Command Reference:</h3>
+            <ul>
+                <li><strong>Give AP to All</strong> - Gives 1 action point to all living players</li>
+                <li><strong>Restart Game</strong> - Ends current game and starts a new one with same players</li>
+                <li><strong>End Game</strong> - Forcefully ends the current game</li>
+                <li><strong>Return to Registration</strong> - Reset to registration phase</li>
+                <li><strong>Give AP to Player</strong> - Give action points to a specific player</li>
+                <li><strong>Give HP to Player</strong> - Give health points to a specific player</li>
+                <li><strong>Give Range to Player</strong> - Increase a player's range</li>
+                <li><strong>Teleport Player</strong> - Move a player to a new position</li>
+                <li><strong>Kill Player</strong> - Instantly eliminate a player</li>
+            </ul>
+        </div>
+    </div>
+
     <script>
         const pwd = document.querySelector("input#password");
         const cmd = document.querySelector("textArea#command");
-        const output = document.querySelector("p");
-        function send(){
+        const output = document.querySelector("#output");
+        
+        function showPlayerActions() {
+            const playerActions = document.getElementById("playerActions");
+            if (playerActions.style.display === "none") {
+                playerActions.style.display = "block";
+            } else {
+                playerActions.style.display = "none";
+            }
+        }
+        
+        function send() {
             fetch(`${location.origin}/api/evalJS?password=${pwd.value}`, {
                 method: "POST",
                 body: cmd.value
             }).then(resp => {
-                output.style.color = (resp.status==200?"":"darkred");
+                output.className = resp.status == 200 ? "output" : "output error";
                 return resp.text();
             }).then(text => {
                 output.innerText = text;
+            }).catch(err => {
+                output.className = "output error";
+                output.innerText = "Error: " + err;
             });
+        }
+        
+        function runCommand(commandType) {
+            let commandCode = "";
+            
+            switch(commandType) {
+                case "giveAP":
+                    commandCode = `
+// Give 1 AP to all living players
+let changes = [];
+for (const playerName in Game.instance.players) {
+    const player = Game.instance.players[playerName];
+    if (player.hp > 0) {
+        player.ap += 1;
+        changes.push({
+            player: playerName,
+            stat: "ap",
+            val: player.ap
+        });
+    }
+}
+broadcastUpdates(changes);
+"Gave 1 AP to all living players"`;
+                    break;
+                    
+                case "restartGame":
+                    commandCode = `
+// End current game and start a new one
+const players = Object.keys(db.accounts);
+db.status = "in-game";
+Game.instance = new Game(players);
+saveDB();
+broadcastGameState();
+"Game restarted with ${players.length} players"`;
+                    break;
+                    
+                case "endGame":
+                    commandCode = `
+// Force end the current game
+const livingPlayers = Object.keys(Game.instance.players).filter(p => Game.instance.players[p].hp > 0);
+if (livingPlayers.length > 0) {
+    // Make a random living player the winner
+    const winner = livingPlayers[Math.floor(Math.random() * livingPlayers.length)];
+    Game.instance._win(winner);
+    broadcastGameState();
+    return "Game ended. " + winner + " declared the winner!";
+} else {
+    return "No living players found to declare as winner";
+}`;
+                    break;
+                    
+                case "returnToRegistration":
+                    commandCode = `
+// Return to registration state
+db.status = "registration";
+Game.instance = null;
+saveDB();
+broadcastGameState();
+"Game reset to registration phase"`;
+                    break;
+                    
+                case "giveAPToPlayer":
+                    const playerName = prompt("Enter player's name:");
+                    const apAmount = prompt("Enter AP amount to give:", "1");
+                    if (!playerName) return;
+                    commandCode = `
+// Give AP to specific player
+if (!Game.instance.players["${playerName}"]) {
+    throw new Error("Player '${playerName}' not found");
+}
+const player = Game.instance.players["${playerName}"];
+player.ap += ${parseInt(apAmount) || 1};
+const changes = [{
+    player: "${playerName}",
+    stat: "ap",
+    val: player.ap
+}];
+broadcastUpdates(changes);
+"Gave ${apAmount} AP to ${playerName}"`;
+                    break;
+                    
+                case "giveHPToPlayer":
+                    const hpPlayerName = prompt("Enter player's name:");
+                    const hpAmount = prompt("Enter HP amount to give:", "1");
+                    if (!hpPlayerName) return;
+                    commandCode = `
+// Give HP to specific player
+if (!Game.instance.players["${hpPlayerName}"]) {
+    throw new Error("Player '${hpPlayerName}' not found");
+}
+const player = Game.instance.players["${hpPlayerName}"];
+player.hp += ${parseInt(hpAmount) || 1};
+const changes = [{
+    player: "${hpPlayerName}",
+    stat: "hp",
+    val: player.hp
+}];
+broadcastUpdates(changes);
+"Gave ${hpAmount} HP to ${hpPlayerName}"`;
+                    break;
+                    
+                case "giveRangeToPlayer":
+                    const rangePlayerName = prompt("Enter player's name:");
+                    const rangeAmount = prompt("Enter range amount to give:", "1");
+                    if (!rangePlayerName) return;
+                    commandCode = `
+// Give range to specific player
+if (!Game.instance.players["${rangePlayerName}"]) {
+    throw new Error("Player '${rangePlayerName}' not found");
+}
+const player = Game.instance.players["${rangePlayerName}"];
+player.range += ${parseInt(rangeAmount) || 1};
+const changes = [{
+    player: "${rangePlayerName}",
+    stat: "range",
+    val: player.range
+}];
+broadcastUpdates(changes);
+"Gave ${rangeAmount} range to ${rangePlayerName}"`;
+                    break;
+                    
+                case "teleportPlayer":
+                    const teleportPlayerName = prompt("Enter player's name:");
+                    const targetRow = prompt("Enter target row (0-15):", "0");
+                    const targetCol = prompt("Enter target column (0-15):", "0");
+                    if (!teleportPlayerName) return;
+                    commandCode = `
+// Teleport player to new position
+if (!Game.instance.players["${teleportPlayerName}"]) {
+    throw new Error("Player '${teleportPlayerName}' not found");
+}
+const player = Game.instance.players["${teleportPlayerName}"];
+const oldPos = player.pos;
+const newPos = new Coord(${parseInt(targetRow) || 0}, ${parseInt(targetCol) || 0});
+
+if (!newPos.inBounds(Game.instance.dim)) {
+    throw new Error("Position out of bounds");
+}
+
+if (Game.instance.grid[newPos] != null && Game.instance.grid[newPos] !== "${teleportPlayerName}") {
+    throw new Error("Target position is occupied by another player");
+}
+
+// Update grid
+if (oldPos) {
+    Game.instance.grid[oldPos] = null;
+}
+Game.instance.grid[newPos] = "${teleportPlayerName}";
+player.pos = newPos;
+
+const changes = [{
+    player: "${teleportPlayerName}",
+    stat: "pos",
+    val: newPos
+}];
+broadcastUpdates(changes);
+"Teleported ${teleportPlayerName} to (${targetRow}, ${targetCol})"`;
+                    break;
+                    
+                case "killPlayer":
+                    const killPlayerName = prompt("Enter player's name to eliminate:");
+                    if (!killPlayerName) return;
+                    commandCode = `
+// Kill a player
+if (!Game.instance.players["${killPlayerName}"]) {
+    throw new Error("Player '${killPlayerName}' not found");
+}
+const player = Game.instance.players["${killPlayerName}"];
+if (player.hp <= 0) {
+    throw new Error("Player is already dead");
+}
+
+// Kill the player
+player.hp = 0;
+Game.instance.grid[player.pos] = null;
+const oldPos = player.pos;
+player.pos = null;
+Game.instance.alivePlayers--;
+
+// Check for game end
+if (Game.instance.alivePlayers === 1) {
+    // Find the last player standing
+    const winner = Object.keys(Game.instance.players).find(p => Game.instance.players[p].hp > 0);
+    if (winner) {
+        Game.instance._win(winner);
+    }
+}
+
+const changes = [
+    { player: "${killPlayerName}", stat: "hp", val: 0 },
+    { player: "${killPlayerName}", stat: "pos", val: null }
+];
+broadcastUpdates(changes);
+"Eliminated ${killPlayerName}"`;
+                    break;
+                    
+                default:
+                    output.innerText = "Unknown command: " + commandType;
+                    return;
+            }
+            
+            cmd.value = commandCode;
+            send();
         }
     </script>
 </body>

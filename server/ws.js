@@ -37,6 +37,39 @@ function sendToPlayer(msg, usr) {
     }
 }
 
+// Helper function for broadcasting game updates
+export function broadcastUpdates(updates) {
+    if (!updates || !Array.isArray(updates) || updates.length === 0) {
+        return false;
+    }
+    
+    const sendObj = {
+        type: "updates",
+        updates: updates
+    };
+    
+    broadcast(sendObj);
+    return true;
+}
+
+// Helper function to broadcast the current game state to all clients
+export function broadcastGameState() {
+    if (!Game.instance) {
+        broadcast({
+            type: "gameState",
+            state: JSON.stringify({
+                status: db.status
+            })
+        });
+    } else {
+        broadcast({
+            type: "gameState",
+            state: Game.instance.serialise()
+        });
+    }
+    return true;
+}
+
 export function giveOutApAndBroadcastResults() {
     if (db.status != "in-game") { return true; }
     let { vote: voteAttempt, ap: apAttempt } = Game.instance.giveOutAP();

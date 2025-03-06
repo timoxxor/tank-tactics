@@ -340,17 +340,32 @@ function createTrackMark(startPos, endPos) {
 // Create shooting effect
 function createShootingEffect(playerName, targetPos) {
     const playerPos = currState.players[playerName].pos;
-    const x = originX + playerPos.c * squareSide + squareSide / 2;
-    const y = originY + playerPos.r * squareSide + squareSide / 2;
+    
+    // Calculate position - use animated position if available
+    let x, y;
+    const playerAnimation = animatedPlayers.get(playerName);
+    
+    if (playerAnimation) {
+        // Use current animated position
+        x = playerAnimation.currentX + squareSide / 2;
+        y = playerAnimation.currentY + squareSide / 2;
+    } else {
+        // Use grid position
+        x = originX + playerPos.c * squareSide + squareSide / 2;
+        y = originY + playerPos.r * squareSide + squareSide / 2;
+    }
 
     // Calculate angle from player to target
     const dx = targetPos.c - playerPos.c;
     const dy = targetPos.r - playerPos.r;
     const direction = Math.atan2(dy, dx);
 
-    // Update the player's barrel angle
+    // Update the player's barrel angle with animation
+    const currentAngle = playerBarrelAngles[playerName] || 0;
+    startBarrelRotationAnimation(playerName, currentAngle, direction);
     playerBarrelAngles[playerName] = direction;
 
+    // Add shooting effect
     shootingEffects.push({
         x: x,
         y: y,
@@ -359,6 +374,11 @@ function createShootingEffect(playerName, targetPos) {
         createdAt: Date.now(),
         opacity: 1.0
     });
+    
+    // Start animation loop if needed
+    if (!animationLoopRunning) {
+        animationLoop();
+    }
 }
 
 // Draw track marks
@@ -447,37 +467,75 @@ function drawShootingEffects() {
 }
 
 function startBarrelRotationAnimation(playerName, startAngle, endAngle) {
-    const ANIMATION_DURATION = 800;
-
+    const ANIMATION_DURATION = 300; // Reduced duration for faster rotation
+    
+    // If there's an existing animation for this player, start from its current angle
+    if (animatedBarrels.has(playerName)) {
+        startAngle = animatedBarrels.get(playerName).currentAngle;
+    }
+    
+    // Normalize angles to between -π and π
+    while (startAngle > Math.PI) startAngle -= 2 * Math.PI;
+    while (startAngle < -Math.PI) startAngle += 2 * Math.PI;
+    while (endAngle > Math.PI) endAngle -= 2 * Math.PI;
+    while (endAngle < -Math.PI) endAngle += 2 * Math.PI;
+    
+    // Calculate angular distance in both directions (clockwise and counterclockwise)
+    let clockwiseDist = endAngle - startAngle;
+    if (clockwiseDist < 0) clockwiseDist += 2 * Math.PI;
+    
+    let counterClockwiseDist = startAngle - endAngle;
+    if (counterClockwiseDist < 0) counterClockwiseDist += 2 * Math.PI;
+    
+    // Choose the shorter rotation direction
+    let finalEndAngle;
+    if (clockwiseDist <= counterClockwiseDist) {
+        // Clockwise is shorter (or equal)
+        if (endAngle < startAngle) {
+            // We need to go over the boundary
+            finalEndAngle = endAngle + 2 * Math.PI;
+        } else {
+            finalEndAngle = endAngle;
+        }
+    } else {
+        // Counter-clockwise is shorter
+        if (endAngle > startAngle) {
+            // We need to go over the boundary
+            finalEndAngle = endAngle - 2 * Math.PI;
+        } else {
+            finalEndAngle = endAngle;
+        }
+    }
+    
     animatedBarrels.set(playerName, {
         startAngle,
-        endAngle,
+        endAngle: finalEndAngle,
         currentAngle: startAngle,
         startTime: Date.now(),
         duration: ANIMATION_DURATION
     });
-
-    animationLoop();
+    
+    // Only trigger animation loop if not already running
+    if (!animationLoopRunning) {
+        animationLoop();
+    }
 }
 
 function updateBarrelAnimations() {
     const currentTime = Date.now();
     const playersToRemove = [];
 
-    // Update each animated player
+    // Update each animated barrel
     for (const [playerName, animation] of animatedBarrels.entries()) {
         const elapsed = currentTime - animation.startTime;
         const progress = Math.min(1, elapsed / animation.duration);
 
         if (progress < 1) {
-            // Update position using easeInOutQuad easing function
-            const eased = progress < 0.5
-                ? 2 * progress * progress
-                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-
-            animation.currentAngle = animation.startAngle + (animation.endAngle - animation.startAngle) * eased;
+            // Use simpler linear interpolation for better performance
+            animation.currentAngle = animation.startAngle + (animation.endAngle - animation.startAngle) * progress;
         } else {
-            // Animation complete
+            // Animation complete - update the final angle in playerBarrelAngles
+            playerBarrelAngles[playerName] = animation.endAngle;
             playersToRemove.push(playerName);
         }
     }
@@ -486,41 +544,61 @@ function updateBarrelAnimations() {
     for (const player of playersToRemove) {
         animatedBarrels.delete(player);
     }
-
-    // Continue animation loop if there are active animations
-    if (animatedBarrels.size > 0) {
-        requestAnimationFrame(animationLoop);
-    }
 }
 
 // Add animation for moving tanks
 function startMoveAnimation(playerName, startPos, endPos) {
-    // Animation duration in milliseconds
-    const ANIMATION_DURATION = 800;
-
-    // Calculate start and end screen positions
-    const startX = originX + startPos.c * squareSide;
-    const startY = originY + startPos.r * squareSide;
-    const endX = originX + endPos.c * squareSide;
-    const endY = originY + endPos.r * squareSide;
-
-    // Create animation object
-    animatedPlayers.set(playerName, {
-        startX,
-        startY,
-        endX,
-        endY,
-        currentX: startX,
-        currentY: startY,
-        startTime: Date.now(),
-        duration: ANIMATION_DURATION
-    });
-
+    // Animation duration in milliseconds - make enemy tanks move slightly faster
+    const ANIMATION_DURATION = playerName === loggedInUname ? 800 : 600;
+    
+    // If there's an existing animation for this player, cancel it and start from current position
+    if (animatedPlayers.has(playerName)) {
+        const currentAnim = animatedPlayers.get(playerName);
+        
+        // Use the current animated position as the new start position
+        const startX = currentAnim.currentX;
+        const startY = currentAnim.currentY;
+        const endX = originX + endPos.c * squareSide;
+        const endY = originY + endPos.r * squareSide;
+        
+        // Create updated animation object
+        animatedPlayers.set(playerName, {
+            startX,
+            startY,
+            endX,
+            endY,
+            currentX: startX,
+            currentY: startY,
+            startTime: Date.now(),
+            duration: ANIMATION_DURATION
+        });
+    } else {
+        // Calculate start and end screen positions
+        const startX = originX + startPos.c * squareSide;
+        const startY = originY + startPos.r * squareSide;
+        const endX = originX + endPos.c * squareSide;
+        const endY = originY + endPos.r * squareSide;
+        
+        // Create animation object
+        animatedPlayers.set(playerName, {
+            startX,
+            startY,
+            endX,
+            endY,
+            currentX: startX,
+            currentY: startY,
+            startTime: Date.now(),
+            duration: ANIMATION_DURATION
+        });
+    }
+    
     // Create track marks for the movement
     createTrackMark(startPos, endPos);
-
-    // Schedule animation updates
-    animationLoop();
+    
+    // Schedule animation updates if not already running
+    if (!animationLoopRunning) {
+        animationLoop();
+    }
 }
 
 // Update animations
@@ -534,13 +612,9 @@ function updateAnimations() {
         const progress = Math.min(1, elapsed / animation.duration);
 
         if (progress < 1) {
-            // Update position using easeInOutQuad easing function
-            const eased = progress < 0.5
-                ? 2 * progress * progress
-                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-
-            animation.currentX = animation.startX + (animation.endX - animation.startX) * eased;
-            animation.currentY = animation.startY + (animation.endY - animation.startY) * eased;
+            // Use simpler, more efficient animation
+            animation.currentX = animation.startX + (animation.endX - animation.startX) * progress;
+            animation.currentY = animation.startY + (animation.endY - animation.startY) * progress;
         } else {
             // Animation complete
             playersToRemove.push(playerName);
@@ -551,18 +625,28 @@ function updateAnimations() {
     for (const player of playersToRemove) {
         animatedPlayers.delete(player);
     }
-
-    // Continue animation loop if there are active animations
-    if (animatedPlayers.size > 0) {
-        requestAnimationFrame(animationLoop);
-    }
 }
 
-// Animation loop
+// Track if animation loop is currently running
+let animationLoopRunning = false;
+let animationFrameId = null;
+
+// Animation loop with performance optimization
 function animationLoop() {
+    animationLoopRunning = true;
+    
     updateBarrelAnimations();
     updateAnimations();
     draw();
+    
+    // Continue animation loop if there are active animations
+    if (animatedBarrels.size > 0 || animatedPlayers.size > 0 || tracksArray.length > 0 || shootingEffects.length > 0) {
+        animationFrameId = requestAnimationFrame(animationLoop);
+    } else {
+        // No more animations, stop the loop
+        animationLoopRunning = false;
+        animationFrameId = null;
+    }
 }
 
 const tileMap = [
@@ -585,153 +669,110 @@ const tileMap = [
 ];
 
 
-function draw() {
-    // Fill background
-    ctx.fillStyle = COLOURS.gridBackground;
-    ctx.fillRect(0, 0, width, height);
+// Cache rendered background to improve performance
+let backgroundCache = null;
+let lastZoomLevel = null;
+let lastOriginX = null;
+let lastOriginY = null;
 
-    // Draw grass tiles for the grid
+// Function to create and cache background
+function createBackgroundCache() {
+    // Create an off-screen canvas for the background
+    const bgCanvas = document.createElement('canvas');
+    bgCanvas.width = width;
+    bgCanvas.height = height;
+    const bgCtx = bgCanvas.getContext('2d');
+    
+    // Draw background color
+    bgCtx.fillStyle = COLOURS.gridBackground;
+    bgCtx.fillRect(0, 0, width, height);
+    
+    // Draw tiles
     for (let r = 0; r < dim; r++) {
         for (let c = 0; c < dim; c++) {
             const x = originX + c * squareSide;
             const y = originY + r * squareSide;
+            
+            // Check if tile is visible (for performance)
+            if (x + squareSide < 0 || x > width || y + squareSide < 0 || y > height) {
+                continue; // Skip tiles that are off-screen
+            }
 
             let tileImage;
             switch (tileMap[r][c]) {
                 // Grass tiles
-                case 0:
-                    tileImage = IMAGES.tiles.grass1;
-                    break;
-                case 1:
-                    tileImage = IMAGES.tiles.grass2;
-                    break;
-                case 2:
-                    tileImage = IMAGES.tiles.grass_roadCornerLL;
-                    break;
-                case 3:
-                    tileImage = IMAGES.tiles.grass_roadCornerLR;
-                    break;
-                case 4:
-                    tileImage = IMAGES.tiles.grass_roadCornerUL;
-                    break;
-                case 5:
-                    tileImage = IMAGES.tiles.grass_roadCornerUR;
-                    break;
-                case 6:
-                    tileImage = IMAGES.tiles.grass_roadCrossing;
-                    break;
-                case 7:
-                    tileImage = IMAGES.tiles.grass_roadCrossingRound;
-                    break;
-                case 8:
-                    tileImage = IMAGES.tiles.grass_roadEast;
-                    break;
-                case 9:
-                    tileImage = IMAGES.tiles.grass_roadNorth;
-                    break;
-                case 10:
-                    tileImage = IMAGES.tiles.grass_roadSplitE;
-                    break;
-                case 11:
-                    tileImage = IMAGES.tiles.grass_roadSplitN;
-                    break;
-                case 12:
-                    tileImage = IMAGES.tiles.grass_roadSplitS;
-                    break;
-                case 13:
-                    tileImage = IMAGES.tiles.grass_roadSplitW;
-                    break;
-                case 14:
-                    tileImage = IMAGES.tiles.grass_roadTransitionE_dirt;
-                    break;
-                case 15:
-                    tileImage = IMAGES.tiles.grass_roadTransitionE;
-                    break;
-                case 16:
-                    tileImage = IMAGES.tiles.grass_roadTransitionN_dirt;
-                    break;
-                case 17:
-                    tileImage = IMAGES.tiles.grass_roadTransitionN;
-                    break;
-                case 18:
-                    tileImage = IMAGES.tiles.grass_roadTransitionS_dirt;
-                    break;
-                case 19:
-                    tileImage = IMAGES.tiles.grass_roadTransitionS;
-                    break;
-                case 20:
-                    tileImage = IMAGES.tiles.grass_roadTransitionW_dirt;
-                    break;
-                case 21:
-                    tileImage = IMAGES.tiles.grass_roadTransitionW;
-                    break;
-                case 22:
-                    tileImage = IMAGES.tiles.grass_transitionE;
-                    break;
-                case 23:
-                    tileImage = IMAGES.tiles.grass_transitionN;
-                    break;
-                case 24:
-                    tileImage = IMAGES.tiles.grass_transitionS;
-                    break;
-                case 25:
-                    tileImage = IMAGES.tiles.grass_transitionW;
-                    break;
-
+                case 0: tileImage = IMAGES.tiles.grass1; break;
+                case 1: tileImage = IMAGES.tiles.grass2; break;
+                case 2: tileImage = IMAGES.tiles.grass_roadCornerLL; break;
+                case 3: tileImage = IMAGES.tiles.grass_roadCornerLR; break;
+                case 4: tileImage = IMAGES.tiles.grass_roadCornerUL; break;
+                case 5: tileImage = IMAGES.tiles.grass_roadCornerUR; break;
+                case 6: tileImage = IMAGES.tiles.grass_roadCrossing; break;
+                case 7: tileImage = IMAGES.tiles.grass_roadCrossingRound; break;
+                case 8: tileImage = IMAGES.tiles.grass_roadEast; break;
+                case 9: tileImage = IMAGES.tiles.grass_roadNorth; break;
+                case 10: tileImage = IMAGES.tiles.grass_roadSplitE; break;
+                case 11: tileImage = IMAGES.tiles.grass_roadSplitN; break;
+                case 12: tileImage = IMAGES.tiles.grass_roadSplitS; break;
+                case 13: tileImage = IMAGES.tiles.grass_roadSplitW; break;
+                case 14: tileImage = IMAGES.tiles.grass_roadTransitionE_dirt; break;
+                case 15: tileImage = IMAGES.tiles.grass_roadTransitionE; break;
+                case 16: tileImage = IMAGES.tiles.grass_roadTransitionN_dirt; break;
+                case 17: tileImage = IMAGES.tiles.grass_roadTransitionN; break;
+                case 18: tileImage = IMAGES.tiles.grass_roadTransitionS_dirt; break;
+                case 19: tileImage = IMAGES.tiles.grass_roadTransitionS; break;
+                case 20: tileImage = IMAGES.tiles.grass_roadTransitionW_dirt; break;
+                case 21: tileImage = IMAGES.tiles.grass_roadTransitionW; break;
+                case 22: tileImage = IMAGES.tiles.grass_transitionE; break;
+                case 23: tileImage = IMAGES.tiles.grass_transitionN; break;
+                case 24: tileImage = IMAGES.tiles.grass_transitionS; break;
+                case 25: tileImage = IMAGES.tiles.grass_transitionW; break;
+                
                 // Sand tiles
-                case 26:
-                    tileImage = IMAGES.tiles.sand1;
-                    break;
-                case 27:
-                    tileImage = IMAGES.tiles.sand2;
-                    break;
-                case 28:
-                    tileImage = IMAGES.tiles.sand_roadCornerLL;
-                    break;
-                case 29:
-                    tileImage = IMAGES.tiles.sand_roadCornerLR;
-                    break;
-                case 30:
-                    tileImage = IMAGES.tiles.sand_roadCornerUL;
-                    break;
-                case 31:
-                    tileImage = IMAGES.tiles.sand_roadCornerUR;
-                    break;
-                case 32:
-                    tileImage = IMAGES.tiles.sand_roadCrossing;
-                    break;
-                case 33:
-                    tileImage = IMAGES.tiles.sand_roadCrossingRound;
-                    break;
-                case 34:
-                    tileImage = IMAGES.tiles.sand_roadEast;
-                    break;
-                case 35:
-                    tileImage = IMAGES.tiles.sand_roadNorth;
-                    break;
-                case 36:
-                    tileImage = IMAGES.tiles.sand_roadSplitE;
-                    break;
-                case 37:
-                    tileImage = IMAGES.tiles.sand_roadSplitN;
-                    break;
-                case 38:
-                    tileImage = IMAGES.tiles.sand_roadSplitS;
-                    break;
-                case 39:
-                    tileImage = IMAGES.tiles.sand_roadSplitW;
-                    break;
-
+                case 26: tileImage = IMAGES.tiles.sand1; break;
+                case 27: tileImage = IMAGES.tiles.sand2; break;
+                case 28: tileImage = IMAGES.tiles.sand_roadCornerLL; break;
+                case 29: tileImage = IMAGES.tiles.sand_roadCornerLR; break;
+                case 30: tileImage = IMAGES.tiles.sand_roadCornerUL; break;
+                case 31: tileImage = IMAGES.tiles.sand_roadCornerUR; break;
+                case 32: tileImage = IMAGES.tiles.sand_roadCrossing; break;
+                case 33: tileImage = IMAGES.tiles.sand_roadCrossingRound; break;
+                case 34: tileImage = IMAGES.tiles.sand_roadEast; break;
+                case 35: tileImage = IMAGES.tiles.sand_roadNorth; break;
+                case 36: tileImage = IMAGES.tiles.sand_roadSplitE; break;
+                case 37: tileImage = IMAGES.tiles.sand_roadSplitN; break;
+                case 38: tileImage = IMAGES.tiles.sand_roadSplitS; break;
+                case 39: tileImage = IMAGES.tiles.sand_roadSplitW; break;
+                
                 // Default to grass1 if the tile type is unknown
-                default:
-                    tileImage = IMAGES.tiles.grass1;
-                    break;
+                default: tileImage = IMAGES.tiles.grass1; break;
             }
-
+            
             // Draw the tile image
-            ctx.drawImage(tileImage, x, y, squareSide, squareSide);
+            bgCtx.drawImage(tileImage, x, y, squareSide, squareSide);
         }
     }
+    
+    return bgCanvas;
+}
+
+function draw() {
+    // Check if we need to recreate the background cache
+    if (!backgroundCache || 
+        lastZoomLevel !== zoomLevel || 
+        lastOriginX !== originX || 
+        lastOriginY !== originY) {
+        
+        backgroundCache = createBackgroundCache();
+        lastZoomLevel = zoomLevel;
+        lastOriginX = originX;
+        lastOriginY = originY;
+    }
+    
+    // Draw the cached background
+    ctx.drawImage(backgroundCache, 0, 0);
+    
+    // Continue with the rest of the drawing
 
     // Draw track marks from tank movements
     drawTrackMarks();
@@ -891,12 +932,50 @@ function updateSelectedMenu() {
     }
 }
 
+// Debounce function to limit how often clicks are processed
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+// Throttle function to limit rate of function calls
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Track last click time to prevent rapid clicks
+let lastClickTime = 0;
+const CLICK_THROTTLE_MS = 100; // Minimum ms between clicks
+
 function handleClick(cx, cy) {
+    // Throttle clicks to prevent lag from rapid firing
+    const now = Date.now();
+    if (now - lastClickTime < CLICK_THROTTLE_MS) {
+        return; // Ignore clicks that are too close together
+    }
+    lastClickTime = now;
+
     const x = cx - originX, y = cy - originY;
     let pos = new Coord(Math.floor(y / squareSide), Math.floor(x / squareSide));
 
-    // If this is a new selection (not deselecting)
-    if (selectedSquare == null || !selectedSquare.equals(pos)) {
+    // Handle selection toggling first for responsiveness
+    const wasSelected = (selectedSquare != null && selectedSquare.equals(pos));
+    if (wasSelected) {
+        selectedSquare = null;
+    } else {
+        selectedSquare = pos;
+        
+        // If this is a new selection (not deselecting)
         // If logged in player exists and is alive
         if (loggedInUname && currState.players[loggedInUname].hp > 0) {
             const playerPos = currState.players[loggedInUname].pos;
@@ -906,9 +985,12 @@ function handleClick(cx, cy) {
             const dy = pos.r - playerPos.r;
             const angle = Math.atan2(dy, dx);
 
-            // Store the angle for the player's barrel
-            startBarrelRotationAnimation(loggedInUname, playerBarrelAngles[loggedInUname], angle)
-            playerBarrelAngles[loggedInUname] = angle;
+            // Only animate if angle changed significantly
+            const currentAngle = playerBarrelAngles[loggedInUname] || 0;
+            if (Math.abs(currentAngle - angle) > 0.1) {
+                startBarrelRotationAnimation(loggedInUname, currentAngle, angle);
+                playerBarrelAngles[loggedInUname] = angle;
+            }
         }
 
         // Also calculate angles for any player if their tile is selected
@@ -925,19 +1007,19 @@ function handleClick(cx, cy) {
                 const dy = playerPos.r - selectedPlayerPos.r;
                 const angle = Math.atan2(dy, dx);
 
-                // Store the angle for the selected player's barrel
-                playerBarrelAngles[selectedPlayerName] = angle;
+                // Only animate if angle changed significantly
+                const currentAngle = playerBarrelAngles[selectedPlayerName] || 0;
+                if (Math.abs(currentAngle - angle) > 0.1) {
+                    startBarrelRotationAnimation(selectedPlayerName, currentAngle, angle);
+                    playerBarrelAngles[selectedPlayerName] = angle;
+                }
             }
         }
     }
-
-    if (selectedSquare != null && selectedSquare.equals(pos)) {
-        selectedSquare = null;
-    } else {
-        selectedSquare = pos;
-    }
+    
     updateSelectedMenu();
-
+    
+    // Force a redraw to show selection immediately
     draw();
 }
 
@@ -1199,9 +1281,12 @@ function handlePinchZoom(ev) {
 }
 
 function addCanvasListeners() {
-    ctx.canvas.addEventListener("click", ev => {
+    // Use throttled click handler to prevent performance issues with rapid clicks
+    const throttledClickHandler = throttle((ev) => {
         handleClick(ev.clientX - canvasX, ev.clientY - canvasY);
-    });
+    }, CLICK_THROTTLE_MS);
+    
+    ctx.canvas.addEventListener("click", throttledClickHandler);
 
     ctx.canvas.addEventListener("touchstart", ev => {
         // Handle pinch gesture (2 fingers)
@@ -1308,18 +1393,61 @@ function parseMessage({ data }) {
     } else if (msg.type == "updates") {
         msg.updates.forEach(u => {
             if (u.stat == "pos") {
-                currState.grid[currState.players[u.player].pos] = null;
+                const oldPos = currState.players[u.player].pos;
+                
                 if (u.val == null) {
+                    // Player died or was removed
+                    currState.grid[oldPos] = null;
                     currState.players[u.player].pos = null;
                 } else {
+                    // Player moved - animate movement
                     const newCoord = crd(u.val);
+                    
+                    // Animate the movement if player exists and has a position
+                    if (oldPos && newCoord) {
+                        // Start movement animation for this player
+                        startMoveAnimation(u.player, oldPos, newCoord);
+                        
+                        // Calculate angle for movement direction
+                        const dx = newCoord.c - oldPos.c;
+                        const dy = newCoord.r - oldPos.r;
+                        const angle = Math.atan2(dy, dx);
+                        
+                        // Animate barrel rotation to point in direction of movement
+                        startBarrelRotationAnimation(u.player, playerBarrelAngles[u.player] || 0, angle);
+                        playerBarrelAngles[u.player] = angle;
+                    }
+                    
+                    // Update positions in data structures
+                    currState.grid[oldPos] = null;
                     currState.players[u.player].pos = newCoord;
                     currState.grid[newCoord] = u.player;
                 }
+                
+                // Update distances if logged-in player moved
                 if (loggedInUname != null && currState.players[loggedInUname].pos != null) {
                     distsFromPlayer = currState.grid.getDistsFromPos(currState.players[loggedInUname].pos);
                 }
+            } else if (u.stat == "hp") {
+                // Handle HP changes - could be damage or healing
+                const oldHp = currState.players[u.player].hp;
+                const newHp = u.val;
+                
+                // If player took damage (HP decreased)
+                if (newHp < oldHp && newHp > 0) {
+                    // Trigger visual effect for damage
+                    // This could be a shooting effect from the last attacker, but we don't
+                    // know who attacked, so we'll just indicate damage on the tank itself
+                    const playerPos = currState.players[u.player].pos;
+                    if (playerPos) {
+                        createShootingEffect(u.player, playerPos);
+                    }
+                }
+                
+                // Update the player's HP
+                currState.players[u.player][u.stat] = u.val;
             } else {
+                // Update other stats (AP, range, etc.)
                 currState.players[u.player][u.stat] = u.val;
             }
         });
@@ -1328,6 +1456,7 @@ function parseMessage({ data }) {
     } else if (msg.type == "error") {
         showErrorModal(msg.msg, null);
     }
+    
     draw();
     updateSelectedMenu();
 }
