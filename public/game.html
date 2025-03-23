@@ -23,10 +23,12 @@
             let canvas = document.querySelector("canvas#game-canvas");
             let ctx = canvas.getContext("2d");
 
-            let {width, height} = document.querySelector("main").getBoundingClientRect();
-
+		let main = document.querySelector("main")
+            let {width, height} = main.getBoundingClientRect();
+		height = 1000
+   		main.scrollTop = 0
             canvas.width = width;
-            canvas.height = height;
+            canvas.height = height
 
             gamePageInit(ctx, width, height);
         })();

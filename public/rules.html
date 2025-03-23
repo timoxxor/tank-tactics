@@ -22,334 +22,40 @@
 <body>
     <main>
         <!-- Mostly copy-pasted from the first version of this game -->
-        <h1 class="h"><ya-tr-span data-index="0-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                data-value="Tank Tactics" data-translation="Танковая тактика" data-ch="0" data-type="trSpan"
-                style="visibility: inherit !important;">Танковая тактика</ya-tr-span></h1>
-        <h2><ya-tr-span data-index="1-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                data-value="Rules" data-translation="Правила" data-ch="0" data-type="trSpan"
-                style="visibility: inherit !important;">Правила</ya-tr-span></h2>
-
+        <h1 class="h"><ya-tr-span data-index="0-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Tank Tactics" data-translation="Танковая тактика" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Танковая тактика</ya-tr-span></h1>
+        <h2><ya-tr-span data-index="1-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Rules" data-translation="Правила" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Правила</ya-tr-span></h2> 
+        
         <div id="Goal">
-            <h2 class="h"><ya-tr-span data-index="3-0" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="Goal of the game" data-translation="Цель игры" data-ch="0"
-                    data-type="trSpan" data-selected="false" style="visibility: inherit !important;">Цель
-                    игры</ya-tr-span></h2>
-            <p><ya-tr-span data-index="4-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" The goal of the game is to be the last player standing. "
-                    data-translation=" Цель игры — остаться последним выжившим игроком. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> Цель игры — остаться последним выжившим игроком.
-                </ya-tr-span><ya-tr-span data-index="4-1" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru"
-                    data-value="You achieve this by attacking others, forming alliances and outsmarting your opponents with superior group strategy. "
-                    data-translation="Для этого нужно нападать на других, создавать альянсы и переигрывать противников с помощью превосходной групповой стратегии. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;" data-selected="false">Для
-                    этого нужно нападать на других, создавать альянсы и переигрывать противников с помощью превосходной
-                    групповой стратегии. </ya-tr-span></p>
+            <h2 class="h"><ya-tr-span data-index="3-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Goal of the game" data-translation="Цель игры" data-ch="0" data-type="trSpan" data-selected="false" style="visibility: inherit !important;">Цель игры</ya-tr-span></h2>
+            <p><ya-tr-span data-index="4-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" The goal of the game is to be the last player standing. " data-translation=" Цель игры — остаться последним выжившим игроком. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Цель игры — остаться последним выжившим игроком. </ya-tr-span><ya-tr-span data-index="4-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You achieve this by attacking others, forming alliances and outsmarting your opponents with superior group strategy. " data-translation="Для этого нужно нападать на других, создавать альянсы и переигрывать противников с помощью превосходной групповой стратегии. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;" data-selected="false">Для этого нужно нападать на других, создавать альянсы и переигрывать противников с помощью превосходной групповой стратегии.  </ya-tr-span></p>
         </div>
         <div id="Stats">
-            <h2 class="h"><ya-tr-span data-index="5-0" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="Stats" data-translation="Статистика" data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Статистика</ya-tr-span></h2>
-            <p><ya-tr-span data-index="6-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Each player has 3 stats. " data-translation=" У каждого игрока есть 3 характеристики. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> У каждого игрока есть 3
-                    характеристики. </ya-tr-span><ya-tr-span data-index="6-1" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru" data-value="They are the following: "
-                    data-translation="Они следующие: " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">Они следующие: </ya-tr-span></p>
-            <h3 id="HP" class="h"><svg style="height: 1em; color: red;" class="fa-heart stat-icon"
-                    viewBox="0 0 512 512">
-                    <path fill="currentColor"
-                        d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z">
-                    </path>
-                </svg><ya-tr-span data-index="7-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Health (HP)" data-translation=" Здоровье (HP)" data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> Здоровье (HP)</ya-tr-span></h3>
-            <p><ya-tr-span data-index="8-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Health (or HP) is the amount of health a player has left. "
-                    data-translation=" Здоровье (или HP) — это количество здоровья, оставшееся у игрока. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;"> Здоровье (или HP) — это количество
-                    здоровья, оставшееся у игрока. </ya-tr-span><ya-tr-span data-index="8-1" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru" data-value="Every player starts with 3 Health. "
-                    data-translation="У каждого игрока изначально 3 единицы здоровья. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">У каждого игрока изначально 3 единицы здоровья.
-                </ya-tr-span><ya-tr-span data-index="8-2" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="You can " data-translation="Вы можете " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Вы можете </ya-tr-span><a
-                    href="#Attacking"><ya-tr-span data-index="8-2" data-translated="true" data-source-lang="en"
-                        data-target-lang="ru" data-value="attack" data-translation="атаковать" data-ch="0"
-                        data-type="trSpan" style="visibility: inherit !important;">атаковать</ya-tr-span></a><ya-tr-span
-                    data-index="8-2" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" players to lower their HP. " data-translation=" игроков, чтобы снизить их HP. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> игроков, чтобы снизить их
-                    HP. </ya-tr-span><ya-tr-span data-index="8-3" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="HP can not be healed. "
-                    data-translation="HP нельзя восстановить. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">HP нельзя восстановить. </ya-tr-span><ya-tr-span
-                    data-index="8-4" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value="Once a player's HP drops to 0, they join "
-                    data-translation="Как только HP игрока падает до 0, он присоединяется к " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Как только HP игрока падает до 0, он
-                    присоединяется к </ya-tr-span><a href="#Jury"><ya-tr-span data-index="8-4" data-translated="true"
-                        data-source-lang="en" data-target-lang="ru" data-value="the Jury" data-translation="жюри"
-                        data-ch="0" data-type="trSpan"
-                        style="visibility: inherit !important;">жюри</ya-tr-span></a><ya-tr-span data-index="8-4"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" and are no longer able to interact with other players. "
-                    data-translation=" и больше не может взаимодействовать с другими игроками. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;"> и больше не может взаимодействовать с
-                    другими игроками. </ya-tr-span></p>
-            <h3 id="AP" class="h"><svg style="height: 1em; color: lime;" class="fa-bolt stat-icon"
-                    viewBox="0 0 320 512">
-                    <path fill="currentColor"
-                        d="M296 160H180.6l42.6-129.8C227.2 15 215.7 0 200 0H56C44 0 33.8 8.9 32.2 20.8l-32 240C-1.7 275.2 9.5 288 24 288h118.7L96.6 482.5c-3.6 15.2 8 29.5 23.3 29.5 8.4 0 16.4-4.4 20.8-12l176-304c9.3-15.9-2.2-36-20.7-36z">
-                    </path>
-                </svg><ya-tr-span data-index="9-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Action Points (AP)" data-translation=" Точки действия (AP)" data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;"> Точки действия (AP)</ya-tr-span></h3>
-            <p><ya-tr-span data-index="10-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Action points (or AP) are used to "
-                    data-translation=" Очки действий (или ОД) используются для " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> Очки действий (или ОД) используются для </ya-tr-span><a
-                    href="#Actions"><ya-tr-span data-index="10-0" data-translated="true" data-source-lang="en"
-                        data-target-lang="ru" data-value="do everything in this game"
-                        data-translation="выполнения всех действий в этой игре" data-ch="0" data-type="trSpan"
-                        style="visibility: inherit !important;">выполнения всех действий в этой
-                        игре</ya-tr-span></a><ya-tr-span data-index="10-0" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value=". " data-translation=". " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="10-1"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value="Every player starts with one. " data-translation="У каждого игрока есть по одному ОД. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;">У каждого игрока есть по
-                    одному ОД. </ya-tr-span><ya-tr-span data-index="10-2" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="You can give AP to other players. "
-                    data-translation="Вы можете отдавать ОД другим игрокам. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">Вы можете отдавать ОД другим игрокам.
-                </ya-tr-span><ya-tr-span data-index="10-3" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="Once every in-game day, every alive player gets one more AP. "
-                    data-translation="Каждый игровой день каждый живой игрок получает ещё одно ОД. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Каждый игровой день каждый живой игрок
-                    получает ещё одно ОД. </ya-tr-span><ya-tr-span data-index="10-4" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru" data-value="You can also obtain AP through "
-                    data-translation="Вы также можете получать ОД через " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">Вы также можете получать ОД через </ya-tr-span><a
-                    href="#Jury"><ya-tr-span data-index="10-4" data-translated="true" data-source-lang="en"
-                        data-target-lang="ru" data-value="the Jury" data-translation="жюри" data-ch="0"
-                        data-type="trSpan" style="visibility: inherit !important;">жюри</ya-tr-span></a><ya-tr-span
-                    data-index="10-4" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". "
-                    data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">.
-                </ya-tr-span></p>
-            <h3 id="Range" class="h"><svg style="height: 1em; color: orange;" class="fa-bullseye stat-icon"
-                    viewBox="0 0 512 512">
-                    <path fill="currentColor"
-                        d="M248 8C111.03 8 0 119.03 0 256s111.03 248 248 248 248-111.03 248-248S384.97 8 248 8zm0 432c-101.69 0-184-82.29-184-184 0-101.69 82.29-184 184-184 101.69 0 184 82.29 184 184 0 101.69-82.29 184-184 184zm0-312c-70.69 0-128 57.31-128 128s57.31 128 128 128 128-57.31 128-128-57.31-128-128-128zm0 192c-35.29 0-64-28.71-64-64s28.71-64 64-64 64 28.71 64 64-28.71 64-64 64z">
-                    </path>
-                </svg><ya-tr-span data-index="11-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Range" data-translation=" Диапазон" data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> Диапазон</ya-tr-span></h3>
-            <p><ya-tr-span data-index="12-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Range is the distance where you can't interact with players further than that distance. Every"
-                    data-translation=" Дальность — это расстояние, на котором вы не можете взаимодействовать с игроками, находящимися дальше. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Дальность — это расстояние,
-                    на котором вы не можете взаимодействовать с игроками, находящимися дальше. </ya-tr-span><ya-tr-span
-                    data-index="12-1" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" player's range starts at 2. Range can be "
-                    data-translation="Дальность каждого игрока начинается с 2. Дальность можно " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Дальность каждого игрока начинается с 2.
-                    Дальность можно </ya-tr-span><a href="#Upgrading_Range"><ya-tr-span data-index="12-1"
-                        data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="upgraded"
-                        data-translation="увеличить" data-ch="0" data-type="trSpan"
-                        style="visibility: inherit !important;">увеличить</ya-tr-span></a><ya-tr-span data-index="12-1"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". You can se"
-                    data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">.
-                </ya-tr-span><ya-tr-span data-index="12-2" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="e your range as the yellow squares around you. Your own r"
-                    data-translation="Вы можете видеть свою дальность в виде жёлтых квадратов вокруг вас. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Вы можете видеть свою дальность в виде
-                    жёлтых квадратов вокруг вас. </ya-tr-span><ya-tr-span data-index="12-3" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru"
-                    data-value="ange is highlighted in yellow, and if you select another player, their range is highlighted in dark red. "
-                    data-translation="Ваша собственная дальность выделена жёлтым, а если вы выбираете другого игрока, его дальность выделяется тёмно-красным. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Ваша собственная дальность
-                    выделена жёлтым, а если вы выбираете другого игрока, его дальность выделяется тёмно-красным.
-                </ya-tr-span></p>
+            <h2 class="h"><ya-tr-span data-index="5-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Stats" data-translation="Статистика" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Статистика</ya-tr-span></h2>
+            <p><ya-tr-span data-index="6-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Each player has 3 stats. " data-translation=" У каждого игрока есть 3 характеристики. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  У каждого игрока есть 3 характеристики. </ya-tr-span><ya-tr-span data-index="6-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="They are the following: " data-translation="Они следующие: " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Они следующие:  </ya-tr-span></p>
+            <h3 id="HP" class="h"><svg style="height: 1em; color: red;" class="fa-heart stat-icon" viewBox="0 0 512 512"><path fill="currentColor" d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z"></path></svg><ya-tr-span data-index="7-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Health (HP)" data-translation=" Здоровье (HP)" data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Здоровье (HP)</ya-tr-span></h3>
+            <p><ya-tr-span data-index="8-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Health (or HP) is the amount of health a player has left. " data-translation=" Здоровье (или HP) — это количество здоровья, оставшееся у игрока. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Здоровье (или HP) — это количество здоровья, оставшееся у игрока. </ya-tr-span><ya-tr-span data-index="8-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Every player starts with 3 Health. " data-translation="У каждого игрока изначально 3 единицы здоровья. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">У каждого игрока изначально 3 единицы здоровья. </ya-tr-span><ya-tr-span data-index="8-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You can " data-translation="Вы можете " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы можете </ya-tr-span><a href="#Attacking"><ya-tr-span data-index="8-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="attack" data-translation="атаковать" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">атаковать</ya-tr-span></a><ya-tr-span data-index="8-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" players to lower their HP. " data-translation=" игроков, чтобы снизить их HP. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> игроков, чтобы снизить их HP. </ya-tr-span><ya-tr-span data-index="8-3" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="HP can not be healed. " data-translation="HP нельзя восстановить. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">HP нельзя восстановить. </ya-tr-span><ya-tr-span data-index="8-4" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Once a player's HP drops to 0, they join " data-translation="Как только HP игрока падает до 0, он присоединяется к " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Как только HP игрока падает до 0, он присоединяется к </ya-tr-span><a href="#Jury"><ya-tr-span data-index="8-4" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="the Jury" data-translation="жюри" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">жюри</ya-tr-span></a><ya-tr-span data-index="8-4" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" and are no longer able to interact with other players. " data-translation=" и больше не может взаимодействовать с другими игроками. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> и больше не может взаимодействовать с другими игроками.  </ya-tr-span></p>
+            <h3 id="AP" class="h"><svg style="height: 1em; color: lime;" class="fa-bolt stat-icon" viewBox="0 0 320 512"><path fill="currentColor" d="M296 160H180.6l42.6-129.8C227.2 15 215.7 0 200 0H56C44 0 33.8 8.9 32.2 20.8l-32 240C-1.7 275.2 9.5 288 24 288h118.7L96.6 482.5c-3.6 15.2 8 29.5 23.3 29.5 8.4 0 16.4-4.4 20.8-12l176-304c9.3-15.9-2.2-36-20.7-36z"></path></svg><ya-tr-span data-index="9-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Action Points (AP)" data-translation=" Точки действия (AP)" data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Точки действия (AP)</ya-tr-span></h3>
+            <p><ya-tr-span data-index="10-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Action points (or AP) are used to " data-translation=" Очки действий (или ОД) используются для " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Очки действий (или ОД) используются для </ya-tr-span><a href="#Actions"><ya-tr-span data-index="10-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="do everything in this game" data-translation="выполнения всех действий в этой игре" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">выполнения всех действий в этой игре</ya-tr-span></a><ya-tr-span data-index="10-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". " data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="10-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Every player starts with one. " data-translation="У каждого игрока есть по одному ОД. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">У каждого игрока есть по одному ОД. </ya-tr-span><ya-tr-span data-index="10-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You can give AP to other players. " data-translation="Вы можете отдавать ОД другим игрокам. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы можете отдавать ОД другим игрокам. </ya-tr-span><ya-tr-span data-index="10-3" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Once every in-game day, every alive player gets one more AP. " data-translation="Каждый игровой день каждый живой игрок получает ещё одно ОД. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Каждый игровой день каждый живой игрок получает ещё одно ОД. </ya-tr-span><ya-tr-span data-index="10-4" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You can also obtain AP through " data-translation="Вы также можете получать ОД через " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы также можете получать ОД через </ya-tr-span><a href="#Jury"><ya-tr-span data-index="10-4" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="the Jury" data-translation="жюри" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">жюри</ya-tr-span></a><ya-tr-span data-index="10-4" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". " data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">.  </ya-tr-span></p>
+            <h3 id="Range" class="h"><svg style="height: 1em; color: orange;" class="fa-bullseye stat-icon" viewBox="0 0 512 512"><path fill="currentColor" d="M248 8C111.03 8 0 119.03 0 256s111.03 248 248 248 248-111.03 248-248S384.97 8 248 8zm0 432c-101.69 0-184-82.29-184-184 0-101.69 82.29-184 184-184 101.69 0 184 82.29 184 184 0 101.69-82.29 184-184 184zm0-312c-70.69 0-128 57.31-128 128s57.31 128 128 128 128-57.31 128-128-57.31-128-128-128zm0 192c-35.29 0-64-28.71-64-64s28.71-64 64-64 64 28.71 64 64-28.71 64-64 64z"></path></svg><ya-tr-span data-index="11-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Range" data-translation=" Диапазон" data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Диапазон</ya-tr-span></h3>
+            <p><ya-tr-span data-index="12-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Range is the distance where you can't interact with players further than that distance. Every" data-translation=" Дальность — это расстояние, на котором вы не можете взаимодействовать с игроками, находящимися дальше. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Дальность — это расстояние, на котором вы не можете взаимодействовать с игроками, находящимися дальше. </ya-tr-span><ya-tr-span data-index="12-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" player's range starts at 2. Range can be " data-translation="Дальность каждого игрока начинается с 2. Дальность можно " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Дальность каждого игрока начинается с 2. Дальность можно </ya-tr-span><a href="#Upgrading_Range"><ya-tr-span data-index="12-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="upgraded" data-translation="увеличить" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">увеличить</ya-tr-span></a><ya-tr-span data-index="12-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". You can se" data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="12-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="e your range as the yellow squares around you. Your own r" data-translation="Вы можете видеть свою дальность в виде жёлтых квадратов вокруг вас. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы можете видеть свою дальность в виде жёлтых квадратов вокруг вас. </ya-tr-span><ya-tr-span data-index="12-3" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="ange is highlighted in yellow, and if you select another player, their range is highlighted in dark red. " data-translation="Ваша собственная дальность выделена жёлтым, а если вы выбираете другого игрока, его дальность выделяется тёмно-красным. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Ваша собственная дальность выделена жёлтым, а если вы выбираете другого игрока, его дальность выделяется тёмно-красным.  </ya-tr-span></p>
         </div>
         <div id="Actions">
-            <h2 class="h"><ya-tr-span data-index="13-0" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="Actions" data-translation="Действия" data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Действия</ya-tr-span></h2>
-            <p><ya-tr-span data-index="14-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" There are 4 actions that are able to do in the game, and they are the following: "
-                    data-translation=" В игре можно выполнять 4 действия: " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> В игре можно выполнять 4 действия: </ya-tr-span></p>
-            <h3 id="Moving" class="h"><ya-tr-span data-index="15-0" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="🏃‍♂️ Moving" data-translation="🏃♂️ Перемещение" data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">🏃♂️ Перемещение</ya-tr-span></h3>
-            <p><ya-tr-span data-index="16-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Moving is changing your position. "
-                    data-translation=" Перемещение — это изменение вашего положения. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> Перемещение — это изменение вашего положения.
-                </ya-tr-span><ya-tr-span data-index="16-1" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru"
-                    data-value="You are able to move one square in any direction (without the diagonals) per "
-                    data-translation="Вы можете перемещаться на один квадрат в любом направлении (кроме диагоналей) за "
-                    data-ch="0" data-type="trSpan" data-selected="false" style="visibility: inherit !important;">Вы
-                    можете перемещаться на один квадрат в любом направлении (кроме диагоналей) за </ya-tr-span><a
-                    href="#AP"><ya-tr-span data-index="16-1" data-translated="true" data-source-lang="en"
-                        data-target-lang="ru" data-value="AP" data-translation="единицу AP" data-ch="0"
-                        data-type="trSpan" data-selected="false" style="visibility: inherit !important;">единицу
-                        AP</ya-tr-span></a><ya-tr-span data-index="16-1" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value=". " data-translation=". " data-ch="0" data-type="trSpan"
-                    data-selected="false" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span
-                    data-index="16-2" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value="The squares that you can reach with your current amount of AP are highlighted in blue. "
-                    data-translation="Квадраты, до которых вы можете добраться с текущим количеством AP, выделены синим цветом. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Квадраты, до которых вы
-                    можете добраться с текущим количеством AP, выделены синим цветом. </ya-tr-span><ya-tr-span
-                    data-index="16-3" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value="You move by selecting an square and clicking 🏃‍♂️. "
-                    data-translation="Для перемещения выберите квадрат и нажмите 🏃‍♂️. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">Для перемещения выберите квадрат и нажмите 🏃‍♂️.
-                </ya-tr-span></p>
-            <h3 id="Attacking" class="h"><ya-tr-span data-index="17-0" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="🔫 Attacking" data-translation="🔫 Атаковать" data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">🔫 Атаковать</ya-tr-span></h3>
-            <p><ya-tr-span data-index="18-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" Attacking is reducing another player's " data-translation=" Атака — это уменьшение "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Атака — это уменьшение
-                </ya-tr-span><a href="#HP"><ya-tr-span data-index="18-0" data-translated="true" data-source-lang="en"
-                        data-target-lang="ru" data-value="HP" data-translation="здоровья" data-ch="0" data-type="trSpan"
-                        style="visibility: inherit !important;">здоровья</ya-tr-span></a><ya-tr-span data-index="18-0"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". You c"
-                    data-translation=" другого игрока. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> другого игрока. </ya-tr-span><ya-tr-span data-index="18-1"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value="an only attack in your " data-translation="Вы можете атаковать только в пределах "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы можете атаковать только в
-                    пределах </ya-tr-span><a href="#Range"><ya-tr-span data-index="18-1" data-translated="true"
-                        data-source-lang="en" data-target-lang="ru" data-value="range" data-translation="радиуса"
-                        data-ch="0" data-type="trSpan"
-                        style="visibility: inherit !important;">радиуса</ya-tr-span></a><ya-tr-span data-index="18-1"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". You r"
-                    data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">.
-                </ya-tr-span><ya-tr-span data-index="18-2" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="emove one HP from your opponent per "
-                    data-translation="Вы отнимаете у противника одно очко здоровья за каждое использованное "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы отнимаете у противника
-                    одно очко здоровья за каждое использованное </ya-tr-span><a href="#AP"><ya-tr-span data-index="18-2"
-                        data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="AP"
-                        data-translation="очко атаки" data-ch="0" data-type="trSpan"
-                        style="visibility: inherit !important;">очко атаки</ya-tr-span></a><ya-tr-span data-index="18-2"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" used. You a"
-                    data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">.
-                </ya-tr-span><ya-tr-span data-index="18-3" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="ttack by selecting a player in your range and clicking 🔫. If y"
-                    data-translation="Чтобы атаковать, выберите игрока в пределах радиуса и нажмите 🔫." data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Чтобы атаковать, выберите игрока в
-                    пределах радиуса и нажмите 🔫.</ya-tr-span><ya-tr-span data-index="18-4" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru"
-                    data-value="ou double click it, it will automatically just deal 1 damage. "
-                    data-translation=" Если вы нажмете на него дважды, он автоматически нанесет 1 единицу урона. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Если вы нажмете на него
-                    дважды, он автоматически нанесет 1 единицу урона. </ya-tr-span></p>
-            <h3 id="Giving_AP" class="h"><ya-tr-span data-index="19-0" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="✋ Giving AP" data-translation="✋ Предоставление AP" data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">✋ Предоставление AP</ya-tr-span></h3>
-            <p><ya-tr-span data-index="20-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" You can give " data-translation=" Вы можете давать " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> Вы можете давать </ya-tr-span><a href="#AP"><ya-tr-span
-                        data-index="20-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                        data-value="AP" data-translation="AP" data-ch="0" data-type="trSpan"
-                        style="visibility: inherit !important;">AP</ya-tr-span></a><ya-tr-span data-index="20-0"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" to players in your range. " data-translation=" игрокам в радиусе действия. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> игрокам в радиусе действия.
-                </ya-tr-span><ya-tr-span data-index="20-1" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="You give 1 AP per AP. "
-                    data-translation="Вы даёте 1 AP за каждое AP. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">Вы даёте 1 AP за каждое AP. </ya-tr-span><ya-tr-span
-                    data-index="20-2" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value="You give AP by selecting a player in your range and clicking ✋. "
-                    data-translation="Вы даёте AP, выбрав игрока в радиусе действия и нажав ✋. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Вы даёте AP, выбрав игрока в радиусе
-                    действия и нажав ✋. </ya-tr-span><ya-tr-span data-index="20-3" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru"
-                    data-value="If you double click it, it will automatically just give 1 AP. "
-                    data-translation="Если вы нажмёте на него дважды, он автоматически даст 1 AP. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Если вы нажмёте на него дважды, он
-                    автоматически даст 1 AP. </ya-tr-span></p>
-            <h3 id="Upgrading_Range" class="h"><ya-tr-span data-index="21-0" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru" data-value="✨ Upgrading Your Range"
-                    data-translation="✨ Обновление Вашего Ассортимента" data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">✨ Обновление Вашего Ассортимента</ya-tr-span></h3>
-            <p><ya-tr-span data-index="22-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" You can upgrade your " data-translation=" Вы можете увеличить свой " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;"> Вы можете увеличить свой </ya-tr-span><a
-                    href="#Range"><ya-tr-span data-index="22-0" data-translated="true" data-source-lang="en"
-                        data-target-lang="ru" data-value="range" data-translation="радиус действия" data-ch="0"
-                        data-type="trSpan" style="visibility: inherit !important;">радиус
-                        действия</ya-tr-span></a><ya-tr-span data-index="22-0" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru" data-value=". " data-translation=". " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span
-                    data-index="22-1" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value="You increase your range by 1 for every 2 "
-                    data-translation="Вы увеличиваете радиус действия на 1 за каждые 2 использованных " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Вы увеличиваете радиус действия на 1 за
-                    каждые 2 использованных </ya-tr-span><a href="#AP"><ya-tr-span data-index="22-1"
-                        data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="AP"
-                        data-translation="AP" data-ch="0" data-type="trSpan"
-                        style="visibility: inherit !important;">AP</ya-tr-span></a><ya-tr-span data-index="22-1"
-                    data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" used. "
-                    data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">.
-                </ya-tr-span><ya-tr-span data-index="22-2" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="You upgrade your range by selecting yourself and clicking✨. "
-                    data-translation="Вы увеличиваете радиус действия, выбрав себя и нажав ✨. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Вы увеличиваете радиус действия, выбрав
-                    себя и нажав ✨. </ya-tr-span><ya-tr-span data-index="22-3" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru"
-                    data-value="If you double click it, it will automatically just upgrade your range by 1. "
-                    data-translation="Если вы нажмете на него дважды, радиус действия увеличится на 1 автоматически. "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Если вы нажмете на него
-                    дважды, радиус действия увеличится на 1 автоматически. </ya-tr-span></p>
+            <h2 class="h"><ya-tr-span data-index="13-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Actions" data-translation="Действия" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Действия</ya-tr-span></h2>
+            <p><ya-tr-span data-index="14-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" There are 4 actions that are able to do in the game, and they are the following: " data-translation=" В игре можно выполнять 4 действия: " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  В игре можно выполнять 4 действия:  </ya-tr-span></p>
+            <h3 id="Moving" class="h"><ya-tr-span data-index="15-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="🏃‍♂️ Moving" data-translation="🏃♂️ Перемещение" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">🏃♂️ Перемещение</ya-tr-span></h3>
+            <p><ya-tr-span data-index="16-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Moving is changing your position. " data-translation=" Перемещение — это изменение вашего положения. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Перемещение — это изменение вашего положения. </ya-tr-span><ya-tr-span data-index="16-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You are able to move one square in any direction (without the diagonals) per " data-translation="Вы можете перемещаться на один квадрат в любом направлении (кроме диагоналей) за " data-ch="0" data-type="trSpan" data-selected="false" style="visibility: inherit !important;">Вы можете перемещаться на один квадрат в любом направлении (кроме диагоналей) за </ya-tr-span><a href="#AP"><ya-tr-span data-index="16-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="AP" data-translation="единицу AP" data-ch="0" data-type="trSpan" data-selected="false" style="visibility: inherit !important;">единицу AP</ya-tr-span></a><ya-tr-span data-index="16-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". " data-translation=". " data-ch="0" data-type="trSpan" data-selected="false" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="16-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="The squares that you can reach with your current amount of AP are highlighted in blue. " data-translation="Квадраты, до которых вы можете добраться с текущим количеством AP, выделены синим цветом. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Квадраты, до которых вы можете добраться с текущим количеством AP, выделены синим цветом. </ya-tr-span><ya-tr-span data-index="16-3" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You move by selecting an square and clicking 🏃‍♂️. " data-translation="Для перемещения выберите квадрат и нажмите 🏃‍♂️. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Для перемещения выберите квадрат и нажмите 🏃‍♂️.  </ya-tr-span></p>
+            <h3 id="Attacking" class="h"><ya-tr-span data-index="17-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="🔫 Attacking" data-translation="🔫 Атаковать" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">🔫 Атаковать</ya-tr-span></h3>
+            <p><ya-tr-span data-index="18-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" Attacking is reducing another player's " data-translation=" Атака — это уменьшение " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Атака — это уменьшение </ya-tr-span><a href="#HP"><ya-tr-span data-index="18-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="HP" data-translation="здоровья" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">здоровья</ya-tr-span></a><ya-tr-span data-index="18-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". You c" data-translation=" другого игрока. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> другого игрока. </ya-tr-span><ya-tr-span data-index="18-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="an only attack in your " data-translation="Вы можете атаковать только в пределах " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы можете атаковать только в пределах </ya-tr-span><a href="#Range"><ya-tr-span data-index="18-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="range" data-translation="радиуса" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">радиуса</ya-tr-span></a><ya-tr-span data-index="18-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". You r" data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="18-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="emove one HP from your opponent per " data-translation="Вы отнимаете у противника одно очко здоровья за каждое использованное " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы отнимаете у противника одно очко здоровья за каждое использованное </ya-tr-span><a href="#AP"><ya-tr-span data-index="18-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="AP" data-translation="очко атаки" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">очко атаки</ya-tr-span></a><ya-tr-span data-index="18-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" used. You a" data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="18-3" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="ttack by selecting a player in your range and clicking 🔫. If y" data-translation="Чтобы атаковать, выберите игрока в пределах радиуса и нажмите 🔫." data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Чтобы атаковать, выберите игрока в пределах радиуса и нажмите 🔫.</ya-tr-span><ya-tr-span data-index="18-4" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="ou double click it, it will automatically just deal 1 damage. " data-translation=" Если вы нажмете на него дважды, он автоматически нанесет 1 единицу урона. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Если вы нажмете на него дважды, он автоматически нанесет 1 единицу урона.  </ya-tr-span></p>
+            <h3 id="Giving_AP" class="h"><ya-tr-span data-index="19-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="✋ Giving AP" data-translation="✋ Предоставление AP" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">✋ Предоставление AP</ya-tr-span></h3>
+            <p><ya-tr-span data-index="20-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" You can give " data-translation=" Вы можете давать " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Вы можете давать </ya-tr-span><a href="#AP"><ya-tr-span data-index="20-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="AP" data-translation="AP" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">AP</ya-tr-span></a><ya-tr-span data-index="20-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" to players in your range. " data-translation=" игрокам в радиусе действия. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> игрокам в радиусе действия. </ya-tr-span><ya-tr-span data-index="20-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You give 1 AP per AP. " data-translation="Вы даёте 1 AP за каждое AP. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы даёте 1 AP за каждое AP. </ya-tr-span><ya-tr-span data-index="20-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You give AP by selecting a player in your range and clicking ✋. " data-translation="Вы даёте AP, выбрав игрока в радиусе действия и нажав ✋. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы даёте AP, выбрав игрока в радиусе действия и нажав ✋. </ya-tr-span><ya-tr-span data-index="20-3" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="If you double click it, it will automatically just give 1 AP. " data-translation="Если вы нажмёте на него дважды, он автоматически даст 1 AP. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Если вы нажмёте на него дважды, он автоматически даст 1 AP.  </ya-tr-span></p>
+            <h3 id="Upgrading_Range" class="h"><ya-tr-span data-index="21-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="✨ Upgrading Your Range" data-translation="✨ Обновление Вашего Ассортимента" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">✨ Обновление Вашего Ассортимента</ya-tr-span></h3>
+            <p><ya-tr-span data-index="22-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" You can upgrade your " data-translation=" Вы можете увеличить свой " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Вы можете увеличить свой </ya-tr-span><a href="#Range"><ya-tr-span data-index="22-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="range" data-translation="радиус действия" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">радиус действия</ya-tr-span></a><ya-tr-span data-index="22-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". " data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="22-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You increase your range by 1 for every 2 " data-translation="Вы увеличиваете радиус действия на 1 за каждые 2 использованных " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы увеличиваете радиус действия на 1 за каждые 2 использованных </ya-tr-span><a href="#AP"><ya-tr-span data-index="22-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="AP" data-translation="AP" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">AP</ya-tr-span></a><ya-tr-span data-index="22-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" used. " data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="22-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You upgrade your range by selecting yourself and clicking✨. " data-translation="Вы увеличиваете радиус действия, выбрав себя и нажав ✨. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы увеличиваете радиус действия, выбрав себя и нажав ✨. </ya-tr-span><ya-tr-span data-index="22-3" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="If you double click it, it will automatically just upgrade your range by 1. " data-translation="Если вы нажмете на него дважды, радиус действия увеличится на 1 автоматически. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Если вы нажмете на него дважды, радиус действия увеличится на 1 автоматически.  </ya-tr-span></p>
         </div>
         <div id="Jury">
-            <h2 class="h"><ya-tr-span data-index="23-0" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="The Jury" data-translation="Присяжные заседатели" data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Присяжные заседатели</ya-tr-span></h2>
-            <p><ya-tr-span data-index="24-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" When a player dies, they join the jury. "
-                    data-translation=" Когда игрок умирает, он присоединяется к жюри. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;"> Когда игрок умирает, он присоединяется к жюри.
-                </ya-tr-span><ya-tr-span data-index="24-1" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru"
-                    data-value="Everyone in the jury votes every 24 hours and when the vote ends, every player with 3+ votes gets one extra "
-                    data-translation="Все члены жюри голосуют каждые 24 часа, и когда голосование заканчивается, каждый игрок, набравший 3+ голоса, получает один дополнительный "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Все члены жюри голосуют
-                    каждые 24 часа, и когда голосование заканчивается, каждый игрок, набравший 3+ голоса, получает один
-                    дополнительный </ya-tr-span><a href="#AP"><ya-tr-span data-index="24-1" data-translated="true"
-                        data-source-lang="en" data-target-lang="ru" data-value="AP" data-translation="AP" data-ch="0"
-                        data-type="trSpan" style="visibility: inherit !important;">AP</ya-tr-span></a><ya-tr-span
-                    data-index="24-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". "
-                    data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">.
-                </ya-tr-span><ya-tr-span data-index="24-2" data-translated="true" data-source-lang="en"
-                    data-target-lang="ru" data-value="If you don't vote, your vote will be wasted. "
-                    data-translation="Если вы не проголосуете, ваш голос пропадёт. " data-ch="0" data-type="trSpan"
-                    style="visibility: inherit !important;">Если вы не проголосуете, ваш голос пропадёт. </ya-tr-span>
-            </p>
-            <h3 id="Upgrading_Range" class="h"><ya-tr-span data-index="25-0" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru" data-value="✅ Voting" data-translation=" Голосование ✅ "
-                    data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Голосование ✅ </ya-tr-span>
-            </h3>
-            <p><ya-tr-span data-index="26-0" data-translated="true" data-source-lang="en" data-target-lang="ru"
-                    data-value=" You vote by selecting a player and clicking the ✅ icon. "
-                    data-translation=" Чтобы проголосовать, выберите игрока и нажмите значок ✅. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;"> Чтобы проголосовать, выберите игрока и
-                    нажмите значок ✅. </ya-tr-span><ya-tr-span data-index="26-1" data-translated="true"
-                    data-source-lang="en" data-target-lang="ru"
-                    data-value="You can remove your vote by selecting the same player and clicking ❎. "
-                    data-translation="Вы можете отозвать свой голос, выбрав того же игрока и нажав ❎. " data-ch="0"
-                    data-type="trSpan" style="visibility: inherit !important;">Вы можете отозвать свой голос, выбрав
-                    того же игрока и нажав ❎. </ya-tr-span></p>
+            <h2 class="h"><ya-tr-span data-index="23-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="The Jury" data-translation="Присяжные заседатели" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Присяжные заседатели</ya-tr-span></h2>
+            <p><ya-tr-span data-index="24-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" When a player dies, they join the jury. " data-translation=" Когда игрок умирает, он присоединяется к жюри. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Когда игрок умирает, он присоединяется к жюри. </ya-tr-span><ya-tr-span data-index="24-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="Everyone in the jury votes every 24 hours and when the vote ends, every player with 3+ votes gets one extra " data-translation="Все члены жюри голосуют каждые 24 часа, и когда голосование заканчивается, каждый игрок, набравший 3+ голоса, получает один дополнительный " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Все члены жюри голосуют каждые 24 часа, и когда голосование заканчивается, каждый игрок, набравший 3+ голоса, получает один дополнительный </ya-tr-span><a href="#AP"><ya-tr-span data-index="24-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="AP" data-translation="AP" data-ch="0" data-type="trSpan" style="visibility: inherit !important;">AP</ya-tr-span></a><ya-tr-span data-index="24-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=". " data-translation=". " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">. </ya-tr-span><ya-tr-span data-index="24-2" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="If you don't vote, your vote will be wasted. " data-translation="Если вы не проголосуете, ваш голос пропадёт. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Если вы не проголосуете, ваш голос пропадёт.  </ya-tr-span></p>
+            <h3 id="Upgrading_Range" class="h"><ya-tr-span data-index="25-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="✅ Voting" data-translation=" Голосование ✅ " data-ch="0" data-type="trSpan" style="visibility: inherit !important;"> Голосование ✅ </ya-tr-span></h3>
+            <p><ya-tr-span data-index="26-0" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value=" You vote by selecting a player and clicking the ✅ icon. " data-translation=" Чтобы проголосовать, выберите игрока и нажмите значок ✅. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">  Чтобы проголосовать, выберите игрока и нажмите значок ✅. </ya-tr-span><ya-tr-span data-index="26-1" data-translated="true" data-source-lang="en" data-target-lang="ru" data-value="You can remove your vote by selecting the same player and clicking ❎. " data-translation="Вы можете отозвать свой голос, выбрав того же игрока и нажав ❎. " data-ch="0" data-type="trSpan" style="visibility: inherit !important;">Вы можете отозвать свой голос, выбрав того же игрока и нажав ❎.  </ya-tr-span></p>
         </div>
         <script>
             const bolt = `<svg style="height: 1em; color: lime;" class="fa-bolt stat-icon" viewBox="0 0 320 512"><path fill="currentColor" d="M296 160H180.6l42.6-129.8C227.2 15 215.7 0 200 0H56C44 0 33.8 8.9 32.2 20.8l-32 240C-1.7 275.2 9.5 288 24 288h118.7L96.6 482.5c-3.6 15.2 8 29.5 23.3 29.5 8.4 0 16.4-4.4 20.8-12l176-304c9.3-15.9-2.2-36-20.7-36z"></path></svg>`;
@@ -363,4 +69,4 @@
     <i class="incl" data-incl="nav">NAVIGATION BAR</i>
 </body>
 
-</html>/html>
+</html>

@@ -4,3 +4,5 @@ db.json
 log.txt
 .env
 .disableEval
+.idea/
+host.sh
