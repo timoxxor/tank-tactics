@@ -45,6 +45,10 @@ export default function public_endpoint(parsed, req, res) {
         res.writeHead(200, {
             "Content-Type": "text/css"
         });
+    } else if(path.extname(filepath) == ".html"){
+        res.writeHead(200, {
+            "Content-Type": "text/html"
+        });
     }
     return fs.createReadStream(filepath).pipe(res);
 }
