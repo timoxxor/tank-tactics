@@ -1,33 +1,51 @@
-import { appendFileSync } from "fs";
+import {appendFileSync} from "fs";
 import Queue from "../lib/queue.js";
 import {Coord, crd} from "../lib/coord.js";
-const { ringDist } = Coord;
 import Grid from "../lib/grid.js";
-import { shuffleArray, humanTimestamp } from "../lib/util.js";
+import {getRandomIntBelow, humanTimestamp} from "../lib/util.js";
+
+const {ringDist} = Coord;
+
 
 /**
- * 
- * @param {number} count 
- * @param {number} dim 
+ *
+ * @param {number} count
+ * @param {number} dim
  * @returns {Coord[]};
  */
 function spreadPlayers(count, dim) {
+    const radius = 2
     /// algoritum za opredelqne poziciite na count igracha v pole dim na dim
-    let possible = Array(dim * dim).fill(null).map((_, idx) => crd(Math.floor(idx / dim), idx % dim));
-    shuffleArray(possible);
-    return possible.slice(0, count);
+    let possible = []
+    for (let i = 0; i < count; i++) {
+        while (true) {
+            let pos = crd(getRandomIntBelow(dim),getRandomIntBelow(dim))
+            let collide = false
+            for (let j = 0; j < possible.length; j++) {
+                if (ringDist(possible[j], pos) <= radius) {
+                    collide = true
+                    break
+                }
+            }
+            if (!collide) {
+                possible.push(pos)
+                break
+            }
+        }
+    }
+    return possible
 }
 
-const FAIL = err => ({ success: false, result: err });
+const FAIL = err => ({success: false, result: err});
 /**
- * 
- * @param {change[]} changes 
- * @param {string} event 
+ *
+ * @param {change[]} changes
+ * @param {string} event
  * @returns {{success: boolean, result: change[]}}
  */
-const SUCCEED = (changes, event, writeLog=true) => {
-    if(writeLog) appendFileSync("log.txt", `[${humanTimestamp()}] ${event}\r\n`);
-    return { success: true, result: changes };
+const SUCCEED = (changes, event, writeLog = true) => {
+    if (writeLog) appendFileSync("log.txt", `[${humanTimestamp()}] ${event}\r\n`);
+    return {success: true, result: changes};
 };
 
 export default class Game {
@@ -55,6 +73,7 @@ export default class Game {
         this.gameOver = false;
         this.winner = null;
     }
+
     static deserialise(str) {
         let obj = JSON.parse(str);
         let ret = new Game();
@@ -70,6 +89,7 @@ export default class Game {
         });
         return ret;
     }
+
     serialise() {
         let obj = {
             dim: this.dim,
@@ -81,7 +101,8 @@ export default class Game {
         }
         return JSON.stringify(obj);
     }
-    serialiseForClient(forPlayer=null){ /// anonymise player votes
+
+    serialiseForClient(forPlayer = null) { /// anonymise player votes
         let obj = {
             dim: this.dim,
             alivePlayers: this.alivePlayers,
@@ -90,44 +111,47 @@ export default class Game {
             players: {...this.players},
             grid: this.grid.serialise()
         }
-        for(const uname in obj.players){
-            if(uname != forPlayer){
+        for (const uname in obj.players) {
+            if (uname != forPlayer) {
                 obj.players[uname].vote = null;
             }
         }
         return JSON.stringify(obj);
     }
+
     _win(winner) {
         this.winner = winner;
         this.gameOver = true;
     }
+
     /**
-     * 
-     * @param {Coord} from 
-     * @param {Coord} to 
+     *
+     * @param {Coord} from
+     * @param {Coord} to
      * @returns {number}
      */
     _routeDist(from, to) {
         /// bfs
         let dists = new Grid(this.dim, Infinity);
         let front = new Queue();
-        front.push({ pos: from, dist: 0 });
+        front.push({pos: from, dist: 0});
         while (dists[to] == Infinity && !front.isEmpty) {
-            const { pos, dist } = front.pop();
+            const {pos, dist} = front.pop();
             if (dist < dists[pos]) {
                 dists[pos] = dist;
                 pos.getNeigh()
                     .filter(e => e.inBounds(this.dim))
                     .filter(e => this.grid[e] == null)
-                    .forEach(e => front.push({ pos: e, dist: dist + 1 }));
+                    .forEach(e => front.push({pos: e, dist: dist + 1}));
             }
         }
         return dists[to];
     }
+
     /**
-     * 
-     * @param {string} player 
-     * @param {string[]} stats 
+     *
+     * @param {string} player
+     * @param {string[]} stats
      * @typedef {{player: string, stat: string, val}} change
      * @returns {change[]}
      */
@@ -142,6 +166,7 @@ export default class Game {
         });
         return ret;
     }
+
     _move(agent, pos, routeLen) {
         this.grid[this.players[agent].pos] = null;
         this.grid[pos] = agent;
@@ -149,6 +174,7 @@ export default class Game {
         this.players[agent].pos = pos;
         return [...this._changes(agent, ["ap", "pos"])];
     }
+
     tryMove(agent, pos) {
         if (this.players[agent].hp <= 0) return FAIL("You're dead.");
         if (!pos.inBounds(this.dim)) return FAIL("That space is outside of the board.");
@@ -159,6 +185,7 @@ export default class Game {
         let changes = this._move(agent, pos, routeLen);
         return SUCCEED(changes, `${agent} moved to ${pos}`);
     }
+
     _attack(agent, patient, amount) {
         this.players[agent].ap -= amount;
         this.players[patient].hp -= amount;
@@ -166,7 +193,9 @@ export default class Game {
         if (this.players[patient].hp <= 0) {
             this.alivePlayers--;
             for (const uname in this.players) {
-                if(this.players[uname].vote == patient){ this.players[uname].vote = null; }
+                if (this.players[uname].vote == patient) {
+                    this.players[uname].vote = null;
+                }
             }
             this.grid[this.players[patient].pos] = null;
             this.players[patient].pos = null;
@@ -177,10 +206,11 @@ export default class Game {
         }
         return [...this._changes(agent, ["ap"]), ...this._changes(patient, ["hp"]), ...killChanges];
     }
+
     tryAttack(agent, patient, amount) {
         if (this.players[agent].hp <= 0) return FAIL("You're dead.");
         if (!this.players[patient]) return FAIL("That player doesn't exist.");
-        if(this.players[patient].hp <= 0) return FAIL("This player is already dead.");
+        if (this.players[patient].hp <= 0) return FAIL("This player is already dead.");
         if (amount <= 0) return FAIL("You need to deal a positive amount of damage.");
         if (amount > this.players[agent].ap) return FAIL("Not enough AP to attack that much.");
         if (ringDist(this.players[agent].pos, this.players[patient].pos) > this.players[agent].range)
@@ -191,15 +221,17 @@ export default class Game {
         let changes = this._attack(agent, patient, amount);
         return SUCCEED(changes, `${agent} attacked ${patient} for ${amount} HP`);
     }
+
     _give(agent, patient, amount) {
         this.players[agent].ap -= amount;
         this.players[patient].ap += amount;
         return [...this._changes(agent, ["ap"]), ...this._changes(patient, ["ap"])];
     }
+
     tryGive(agent, patient, amount) {
         if (this.players[agent].hp <= 0) return FAIL("You're dead.");
         if (!this.players[patient]) return FAIL("That player doesn't exist.");
-        if(this.players[patient].hp <= 0) return FAIL("This player is dead.");
+        if (this.players[patient].hp <= 0) return FAIL("This player is dead.");
         if (amount <= 0) return FAIL("You need to give a positive amount of AP.");
         if (amount > this.players[agent].ap) return FAIL("Not enough AP to give that much.");
         if (ringDist(this.players[agent].pos, this.players[patient].pos) > this.players[agent].range)
@@ -207,11 +239,13 @@ export default class Game {
         let changes = this._give(agent, patient, amount);
         return SUCCEED(changes, `${agent} gave ${amount} AP to ${patient}`);
     }
+
     _upgrade(agent, amount) {
         this.players[agent].ap -= amount * 2;
         this.players[agent].range += amount;
         return [...this._changes(agent, ["ap", "range"])];
     }
+
     tryUpgrade(agent, amount) {
         if (this.players[agent].hp <= 0) return FAIL("You're dead.");
         if (amount <= 0) return FAIL("Upgrade amount must be positive.");
@@ -219,10 +253,12 @@ export default class Game {
         let changes = this._upgrade(agent, amount);
         return SUCCEED(changes, `${agent} upgraded their range by ${amount}`);
     }
+
     _vote(agent, patient) {
         this.players[agent].vote = patient;
         return [...this._changes(agent, ["vote"])];
     }
+
     tryVote(agent, patient) {
         if (this.players[agent].hp > 0) return FAIL("You can't vote when still alive.");
         if (patient != null) {
@@ -232,14 +268,19 @@ export default class Game {
         let changes = this._vote(agent, patient);
         return SUCCEED(changes, `${agent} changed their vote to ${patient}`);
     }
+
     giveOutAP() {
         let voteChangedPlayers = new Set(), apChangedPlayers = new Set();
         /// votes
         let counts = {};
-        for (const uname in this.players) { counts[uname] = 0; }
-        for(const uname in this.players){
+        for (const uname in this.players) {
+            counts[uname] = 0;
+        }
+        for (const uname in this.players) {
             const p = this.players[uname];
-            if(p.hp > 0 || p.vote == null){ continue; }
+            if (p.hp > 0 || p.vote == null) {
+                continue;
+            }
             counts[p.vote]++;
             this.players[p.name].vote = null;
             voteChangedPlayers.add(p.name);
